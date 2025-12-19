@@ -139,10 +139,8 @@ export default function CalendarGrid({
 
     // Handle exam cell click
     const handleExamClick = (exam) => {
-        const course = getCourseInfo(courses, exam.course_code);
         navigateTo('course', {
             courseCode: exam.course_code,
-            courseName: course?.course_name || exam.course_code,
             examId: exam.exam_id
         });
     };
