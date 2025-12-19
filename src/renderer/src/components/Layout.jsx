@@ -1,17 +1,19 @@
-import { useState, useCallback } from 'react';
+import { useNavigation, VIEW_CONFIG } from '../contexts/NavigationContext';
 
 /**
  * Layout Component - Base split-pane layout shell
  * 
  * Provides the persistent sidebar (left) and dynamic content area (right).
  * Sidebar is collapsible between icon-only and expanded modes.
+ * Uses NavigationContext for state management.
  */
 
-// Navigation items configuration
+// Navigation items configuration (only items marked showInNav)
 const NAV_ITEMS = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
     { id: 'classroom', label: 'Classroom', icon: ClassroomIcon },
     { id: 'student', label: 'Student', icon: StudentIcon },
+    { id: 'course', label: 'Course', icon: CourseIcon },
 ];
 
 // SVG Icons as components
@@ -43,6 +45,16 @@ function StudentIcon({ className }) {
     );
 }
 
+function CourseIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            <path d="M8 7h8M8 11h8M8 15h5" />
+        </svg>
+    );
+}
+
 function ChevronLeftIcon({ className }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -67,12 +79,33 @@ function BackIcon({ className }) {
     );
 }
 
-export default function Layout({ children, currentView, onNavigate, canGoBack, onGoBack }) {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+export default function Layout({ children }) {
+    const {
+        activeNavItem,
+        currentViewConfig,
+        viewParams,
+        isSidebarCollapsed,
+        canGoBack,
+        navigateToRoot,
+        goBack,
+        toggleSidebar,
+    } = useNavigation();
 
-    const toggleSidebar = useCallback(() => {
-        setIsSidebarCollapsed(prev => !prev);
-    }, []);
+    // Build the page title
+    const getPageTitle = () => {
+        let title = currentViewConfig.title;
+        // Add context for specific views
+        if (viewParams.courseCode) {
+            title = `${viewParams.courseCode}`;
+        }
+        if (viewParams.studentName) {
+            title = viewParams.studentName;
+        }
+        if (viewParams.classroomId) {
+            title = `Room ${viewParams.classroomId}`;
+        }
+        return title;
+    };
 
     return (
         <div className="flex h-screen bg-nord-snow-3 dark:bg-nord-polar-1">
@@ -110,12 +143,12 @@ export default function Layout({ children, currentView, onNavigate, canGoBack, o
                 <nav className="flex-1 p-2 space-y-1">
                     {NAV_ITEMS.map(item => {
                         const Icon = item.icon;
-                        const isActive = currentView === item.id;
+                        const isActive = activeNavItem === item.id;
 
                         return (
                             <button
                                 key={item.id}
-                                onClick={() => onNavigate(item.id)}
+                                onClick={() => navigateToRoot(item.id)}
                                 className={`
                                     nav-item w-full
                                     ${isActive ? 'active' : ''}
@@ -132,7 +165,7 @@ export default function Layout({ children, currentView, onNavigate, canGoBack, o
                     })}
                 </nav>
 
-                {/* Footer area (could be used for settings later) */}
+                {/* Footer area */}
                 <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3">
                     {!isSidebarCollapsed && (
                         <p className="text-xs text-nord-polar-4/60 dark:text-nord-snow-1/40 text-center">
@@ -144,11 +177,11 @@ export default function Layout({ children, currentView, onNavigate, canGoBack, o
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Header with back button */}
-                <header className="flex items-center h-14 px-4 border-b border-nord-snow-1 dark:border-nord-polar-3 bg-white dark:bg-nord-polar-2">
+                {/* Header with back button and page title */}
+                <header className="flex items-center gap-4 h-14 px-4 border-b border-nord-snow-1 dark:border-nord-polar-3 bg-white dark:bg-nord-polar-2">
                     {canGoBack && (
                         <button
-                            onClick={onGoBack}
+                            onClick={goBack}
                             className="flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg
                                        text-nord-polar-3 dark:text-nord-snow-1
                                        hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3
@@ -158,6 +191,9 @@ export default function Layout({ children, currentView, onNavigate, canGoBack, o
                             <span className="text-sm font-medium">Back</span>
                         </button>
                     )}
+                    <h2 className="font-heading text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 truncate">
+                        {getPageTitle()}
+                    </h2>
                 </header>
 
                 {/* Content */}

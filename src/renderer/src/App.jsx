@@ -1,76 +1,125 @@
-import { useState, useCallback } from 'react';
+import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/NavigationContext';
 import Layout from './components/Layout';
 import Spinner from './components/Spinner';
 
 /**
  * App Component - Main application entry point
  * 
- * Manages view state and navigation history.
- * Currently renders placeholder views - these will be built in subsequent sections.
+ * Uses NavigationContext for view state management.
+ * Renders the appropriate view based on currentView state.
  */
 
 // Placeholder view components (to be replaced with actual implementations)
 function DashboardView() {
+    const { navigateTo } = useNavigation();
+
     return (
         <div className="space-y-4">
-            <h2 className="font-heading text-2xl text-nord-polar-1 dark:text-nord-snow-2">
-                Schedule Overview
-            </h2>
             <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1">
+                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
                     Calendar grid will be implemented in Section 3.
                 </p>
+                {/* Demo navigation - will be removed when real grid is built */}
+                <button
+                    onClick={() => navigateTo('course', { courseCode: 'MATH101', courseName: 'Calculus I' })}
+                    className="btn btn-primary"
+                >
+                    Demo: Go to Course View
+                </button>
             </div>
         </div>
     );
 }
 
 function ClassroomView() {
+    const { navigateTo } = useNavigation();
+
     return (
         <div className="space-y-4">
-            <h2 className="font-heading text-2xl text-nord-polar-1 dark:text-nord-snow-2">
-                Classroom View
-            </h2>
             <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1">
+                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
                     Room selection and timetable will be implemented in Section 4.
                 </p>
+                {/* Demo navigation */}
+                <button
+                    onClick={() => navigateTo('course', { courseCode: 'CS101', courseName: 'Intro to Programming' })}
+                    className="btn btn-secondary"
+                >
+                    Demo: View Course from Room
+                </button>
             </div>
         </div>
     );
 }
 
 function StudentView() {
+    const { navigateTo } = useNavigation();
+
     return (
         <div className="space-y-4">
-            <h2 className="font-heading text-2xl text-nord-polar-1 dark:text-nord-snow-2">
-                Student View
-            </h2>
             <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1">
+                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
                     Student search and schedule will be implemented in Section 5.
                 </p>
+                {/* Demo navigation */}
+                <button
+                    onClick={() => navigateTo('course', { courseCode: 'PHYS201', courseName: 'Physics II' })}
+                    className="btn btn-secondary"
+                >
+                    Demo: View Student's Course
+                </button>
             </div>
         </div>
     );
 }
 
-function CourseView({ courseCode, onBack }) {
+function CourseView() {
+    const { viewParams, navigateTo, goBack } = useNavigation();
+
     return (
         <div className="space-y-4">
-            <h2 className="font-heading text-2xl text-nord-polar-1 dark:text-nord-snow-2">
-                Course: {courseCode}
-            </h2>
+            {/* Course Header */}
             <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="text-lg font-semibold text-nord-polar-1 dark:text-nord-snow-2">
+                            {viewParams.courseCode}
+                        </h3>
+                        <p className="text-nord-polar-3 dark:text-nord-snow-1">
+                            {viewParams.courseName || 'Course Name'}
+                        </p>
+                    </div>
+                </div>
+                <p className="text-nord-polar-4 dark:text-nord-snow-1/70">
                     Course details and enrolled students will be implemented in Section 6.
                 </p>
             </div>
+
+            {/* Demo: Click student to navigate */}
+            <div className="card">
+                <h4 className="font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-3">
+                    Enrolled Students (Demo)
+                </h4>
+                <div className="space-y-2">
+                    {['Ahmet Yılmaz', 'Elif Demir', 'Mehmet Kaya'].map(name => (
+                        <button
+                            key={name}
+                            onClick={() => navigateTo('student', { studentId: 'STU001', studentName: name })}
+                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
+                                       text-nord-polar-2 dark:text-nord-snow-1 transition-colors"
+                        >
+                            {name}
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
 
-function WelcomeView({ onCreateProject, onLoadProject }) {
+function WelcomeView() {
+    const { navigateToRoot } = useNavigation();
+
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
             <div className="text-center">
@@ -81,10 +130,16 @@ function WelcomeView({ onCreateProject, onLoadProject }) {
                     Examination Schedule Automation
                 </p>
             </div>
-            <div className="card max-w-md w-full">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1 text-center">
+            <div className="card max-w-md w-full text-center">
+                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
                     Welcome screen and recent projects will be implemented in Section 7.
                 </p>
+                <button
+                    onClick={() => navigateToRoot('dashboard')}
+                    className="btn btn-primary"
+                >
+                    Go to Dashboard
+                </button>
             </div>
         </div>
     );
@@ -99,43 +154,25 @@ const VIEWS = {
     course: CourseView,
 };
 
-export default function App() {
-    // Navigation state
-    const [currentView, setCurrentView] = useState('dashboard');
-    const [viewHistory, setViewHistory] = useState(['dashboard']);
-    const [viewParams, setViewParams] = useState({});
-
-    // Navigate to a view
-    const navigateTo = useCallback((viewId, params = {}) => {
-        setViewHistory(prev => [...prev, viewId]);
-        setCurrentView(viewId);
-        setViewParams(params);
-    }, []);
-
-    // Go back in history
-    const goBack = useCallback(() => {
-        if (viewHistory.length > 1) {
-            const newHistory = viewHistory.slice(0, -1);
-            setViewHistory(newHistory);
-            setCurrentView(newHistory[newHistory.length - 1]);
-            setViewParams({});
-        }
-    }, [viewHistory]);
-
-    // Check if we can go back
-    const canGoBack = viewHistory.length > 1;
+// Inner app that uses navigation context
+function AppContent() {
+    const { currentView } = useNavigation();
 
     // Get current view component
     const ViewComponent = VIEWS[currentView] || DashboardView;
 
     return (
-        <Layout
-            currentView={currentView}
-            onNavigate={navigateTo}
-            canGoBack={canGoBack}
-            onGoBack={goBack}
-        >
-            <ViewComponent {...viewParams} onNavigate={navigateTo} onBack={goBack} />
+        <Layout>
+            <ViewComponent />
         </Layout>
+    );
+}
+
+// Main app wrapper with providers
+export default function App() {
+    return (
+        <NavigationProvider>
+            <AppContent />
+        </NavigationProvider>
     );
 }
