@@ -61,11 +61,6 @@ function findExamAtSlot(exams, date, time) {
     return exams.find(e => e.date === date && e.time === time);
 }
 
-// Get course info for an exam
-function getCourseInfo(courses, courseCode) {
-    return courses.find(c => c.course_code === courseCode);
-}
-
 // Check if a date is today
 function isToday(dateString) {
     const today = new Date().toISOString().split('T')[0];
@@ -199,17 +194,17 @@ export default function CalendarGrid({
 
             {/* Calendar Grid */}
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[900px]">
+                <table className="w-full table-fixed border-collapse min-w-[900px]">
                     {/* Header row with dates */}
                     <thead>
                         <tr>
-                            <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-16 min-w-[60px]">
+                            <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-[60px]">
                                 Time
                             </th>
                             {weekDays.map(date => (
                                 <th
                                     key={date}
-                                    className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3 min-w-[110px]
+                                    className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3
                                         ${isToday(date)
                                             ? 'text-nord-frost-3 dark:text-nord-frost-2 bg-nord-frost-3/5 dark:bg-nord-frost-2/10'
                                             : 'text-nord-polar-3 dark:text-nord-snow-1/70'
@@ -231,7 +226,6 @@ export default function CalendarGrid({
 
                                 {weekDays.map(date => {
                                     const exam = findExamAtSlot(exams, date, time);
-                                    const course = exam ? getCourseInfo(courses, exam.course_code) : null;
                                     const todayCell = isToday(date);
 
                                     return (
@@ -252,9 +246,6 @@ export default function CalendarGrid({
                                                     >
                                                         <div className="font-medium text-sm text-nord-frost-4 dark:text-nord-frost-2 group-hover:text-nord-frost-3 dark:group-hover:text-nord-frost-1 truncate leading-tight">
                                                             {exam.course_code}
-                                                        </div>
-                                                        <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60 truncate leading-tight">
-                                                            {course?.course_name}
                                                         </div>
                                                         <div className="flex items-center gap-1.5 mt-1 text-xs text-nord-polar-4/70 dark:text-nord-snow-1/50">
                                                             <span className="flex items-center gap-0.5">

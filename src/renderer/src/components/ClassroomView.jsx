@@ -10,6 +10,20 @@ import Spinner from './Spinner';
  * Select a classroom to see only exams scheduled in that room.
  */
 
+// Helper to highlight matching text
+function HighlightedText({ text, query }) {
+    if (!query.trim()) return text;
+
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, i) =>
+        regex.test(part)
+            ? <strong key={i} className="font-bold">{part}</strong>
+            : part
+    );
+}
+
 export default function ClassroomView() {
     const [classrooms, setClassrooms] = useState([]);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -108,7 +122,7 @@ export default function ClassroomView() {
                                         className="w-full text-left px-4 py-3 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 transition-colors border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
                                     >
                                         <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
-                                            {room.classroom_id}
+                                            <HighlightedText text={room.classroom_id} query={searchQuery} />
                                         </div>
                                         <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
                                             Capacity: {room.capacity} seats

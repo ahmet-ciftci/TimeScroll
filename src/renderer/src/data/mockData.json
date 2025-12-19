@@ -35,90 +35,69 @@
     ],
     "students": [
         {
-            "student_id": "STU001",
-            "name": "Ahmet Yılmaz"
+            "student_id": "STU001"
         },
         {
-            "student_id": "STU002",
-            "name": "Elif Demir"
+            "student_id": "STU002"
         },
         {
-            "student_id": "STU003",
-            "name": "Mehmet Kaya"
+            "student_id": "STU003"
         },
         {
-            "student_id": "STU004",
-            "name": "Zeynep Arslan"
+            "student_id": "STU004"
         },
         {
-            "student_id": "STU005",
-            "name": "Can Öztürk"
+            "student_id": "STU005"
         },
         {
-            "student_id": "STU006",
-            "name": "Ayşe Çelik"
+            "student_id": "STU006"
         },
         {
-            "student_id": "STU007",
-            "name": "Burak Şahin"
+            "student_id": "STU007"
         },
         {
-            "student_id": "STU008",
-            "name": "Selin Yıldız"
+            "student_id": "STU008"
         },
         {
-            "student_id": "STU009",
-            "name": "Emre Koç"
+            "student_id": "STU009"
         },
         {
-            "student_id": "STU010",
-            "name": "Deniz Aydın"
+            "student_id": "STU010"
         },
         {
-            "student_id": "STU011",
-            "name": "Gizem Polat"
+            "student_id": "STU011"
         },
         {
-            "student_id": "STU012",
-            "name": "Oğuz Erdoğan"
+            "student_id": "STU012"
         },
         {
-            "student_id": "STU013",
-            "name": "İrem Aksoy"
+            "student_id": "STU013"
         },
         {
-            "student_id": "STU014",
-            "name": "Kaan Özkan"
+            "student_id": "STU014"
         },
         {
-            "student_id": "STU015",
-            "name": "Merve Tekin"
+            "student_id": "STU015"
         },
         {
-            "student_id": "STU016",
-            "name": "Tolga Kurt"
+            "student_id": "STU016"
         },
         {
-            "student_id": "STU017",
-            "name": "Hande Güneş"
+            "student_id": "STU017"
         },
         {
-            "student_id": "STU018",
-            "name": "Barış Yalçın"
+            "student_id": "STU018"
         },
         {
-            "student_id": "STU019",
-            "name": "Ceren Doğan"
+            "student_id": "STU019"
         },
         {
-            "student_id": "STU020",
-            "name": "Serkan Özer"
+            "student_id": "STU020"
         }
     ],
     "courses": [
         {
             "course_code": "MATH101",
-            "course_name": "Calculus I",
             "enrolled_students": [
                 "STU001",
                 "STU002",
@@ -132,7 +111,6 @@
         },
         {
             "course_code": "PHYS201",
-            "course_name": "Physics II",
             "enrolled_students": [
                 "STU002",
                 "STU004",
@@ -144,7 +122,6 @@
         },
         {
             "course_code": "CS101",
-            "course_name": "Introduction to Programming",
             "enrolled_students": [
                 "STU001",
                 "STU003",
@@ -159,7 +136,6 @@
         },
         {
             "course_code": "ENG102",
-            "course_name": "English Composition",
             "enrolled_students": [
                 "STU010",
                 "STU011",
@@ -171,7 +147,6 @@
         },
         {
             "course_code": "HIST110",
-            "course_name": "World History",
             "enrolled_students": [
                 "STU014",
                 "STU016",

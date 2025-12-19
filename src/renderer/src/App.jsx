@@ -2,6 +2,8 @@ import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/Navig
 import Layout from './components/Layout';
 import CalendarGrid from './components/CalendarGrid';
 import ClassroomViewComponent from './components/ClassroomView';
+import StudentViewComponent from './components/StudentView';
+import CourseViewComponent from './components/CourseView';
 import Spinner from './components/Spinner';
 
 /**
@@ -25,68 +27,11 @@ function ClassroomView() {
 }
 
 function StudentView() {
-    const { navigateTo } = useNavigation();
-
-    return (
-        <div className="space-y-4">
-            <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
-                    Student search and schedule will be implemented in Section 5.
-                </p>
-                {/* Demo navigation */}
-                <button
-                    onClick={() => navigateTo('course', { courseCode: 'PHYS201', courseName: 'Physics II' })}
-                    className="btn btn-secondary"
-                >
-                    Demo: View Student's Course
-                </button>
-            </div>
-        </div>
-    );
+    return <StudentViewComponent />;
 }
 
 function CourseView() {
-    const { viewParams, navigateTo, goBack } = useNavigation();
-
-    return (
-        <div className="space-y-4">
-            {/* Course Header */}
-            <div className="card">
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 className="text-lg font-semibold text-nord-polar-1 dark:text-nord-snow-2">
-                            {viewParams.courseCode}
-                        </h3>
-                        <p className="text-nord-polar-3 dark:text-nord-snow-1">
-                            {viewParams.courseName || 'Course Name'}
-                        </p>
-                    </div>
-                </div>
-                <p className="text-nord-polar-4 dark:text-nord-snow-1/70">
-                    Course details and enrolled students will be implemented in Section 6.
-                </p>
-            </div>
-
-            {/* Demo: Click student to navigate */}
-            <div className="card">
-                <h4 className="font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-3">
-                    Enrolled Students (Demo)
-                </h4>
-                <div className="space-y-2">
-                    {['Ahmet Yılmaz', 'Elif Demir', 'Mehmet Kaya'].map(name => (
-                        <button
-                            key={name}
-                            onClick={() => navigateTo('student', { studentId: 'STU001', studentName: name })}
-                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
-                                       text-nord-polar-2 dark:text-nord-snow-1 transition-colors"
-                        >
-                            {name}
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+    return <CourseViewComponent />;
 }
 
 function WelcomeView() {
