@@ -184,7 +184,7 @@
         {
             "exam_id": "EX001",
             "course_code": "MATH101",
-            "date": "2024-12-20",
+            "date": "2025-12-15",
             "time": "09:00",
             "duration_minutes": 120,
             "classroom_id": "C302"
@@ -192,7 +192,7 @@
         {
             "exam_id": "EX002",
             "course_code": "PHYS201",
-            "date": "2024-12-20",
+            "date": "2025-12-16",
             "time": "14:00",
             "duration_minutes": 90,
             "classroom_id": "A101"
@@ -200,7 +200,7 @@
         {
             "exam_id": "EX003",
             "course_code": "CS101",
-            "date": "2024-12-21",
+            "date": "2025-12-17",
             "time": "09:00",
             "duration_minutes": 120,
             "classroom_id": "C302"
@@ -208,7 +208,7 @@
         {
             "exam_id": "EX004",
             "course_code": "ENG102",
-            "date": "2024-12-21",
+            "date": "2025-12-18",
             "time": "14:00",
             "duration_minutes": 60,
             "classroom_id": "B205"
@@ -216,7 +216,7 @@
         {
             "exam_id": "EX005",
             "course_code": "HIST110",
-            "date": "2024-12-22",
+            "date": "2025-12-19",
             "time": "10:00",
             "duration_minutes": 90,
             "classroom_id": "A101"

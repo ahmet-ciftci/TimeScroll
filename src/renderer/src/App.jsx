@@ -1,5 +1,6 @@
 import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/NavigationContext';
 import Layout from './components/Layout';
+import CalendarGrid from './components/CalendarGrid';
 import Spinner from './components/Spinner';
 
 /**
@@ -9,24 +10,11 @@ import Spinner from './components/Spinner';
  * Renders the appropriate view based on currentView state.
  */
 
-// Placeholder view components (to be replaced with actual implementations)
+// Real view components
 function DashboardView() {
-    const { navigateTo } = useNavigation();
-
     return (
         <div className="space-y-4">
-            <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
-                    Calendar grid will be implemented in Section 3.
-                </p>
-                {/* Demo navigation - will be removed when real grid is built */}
-                <button
-                    onClick={() => navigateTo('course', { courseCode: 'MATH101', courseName: 'Calculus I' })}
-                    className="btn btn-primary"
-                >
-                    Demo: Go to Course View
-                </button>
-            </div>
+            <CalendarGrid />
         </div>
     );
 }
