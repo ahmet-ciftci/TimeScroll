@@ -77,7 +77,7 @@ class Scheduler {
 
 
     checkConflict(course, time, room, date, allStudents) {
-
+        
         if (room.capacity < course.studentCount) {
             return false;
         }
@@ -89,10 +89,10 @@ class Scheduler {
         );
 
         if (roomTaken) return false;
+
         const enrolledStudents = allStudents.filter(s => s.enrolledCourses.includes(course.courseCode));
 
         for (const student of enrolledStudents) {
-            
             const hasConcurrency = this.assignedSlots.some(slot =>
                 slot.date === date &&
                 slot.startTime === time &&
@@ -101,27 +101,28 @@ class Scheduler {
 
             if (hasConcurrency) return false;
 
-            
             if (!this.checkDailyLimit(student, date, allStudents)) {
                 return false;
             }
 
-            
             if (!this.checkConsecutiveGap(student, time, date, allStudents)) {
                 return false;
             }
         }
-
         return true;
     }
-        //TODO: @emre
 
-
-    // requirement 7
     checkDailyLimit(student, date, allStudents) {
-        // TODO: @emre
-        return true;
+        const studentDailyExams = this.assignedSlots.filter(slot =>
+            slot.date === date &&
+            allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+    );
+
+    if (studentDailyExams.length >= this.maxExamsPerDay) {
+        return false;
     }
+    return true;
+}
 
     // requirement 6
     checkConsecutiveGap(student, newTime, date, allStudents) {
