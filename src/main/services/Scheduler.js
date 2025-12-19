@@ -75,10 +75,47 @@ class Scheduler {
         return false;
     }
 
+
     checkConflict(course, time, room, date, allStudents) {
-        //TODO: @emre
-        return true; 
+
+        if (room.capacity < course.studentCount) {
+            return false;
+        }
+
+        const roomTaken = this.assignedSlots.some(slot =>
+            slot.roomName === room.roomName &&
+            slot.date === date &&
+            slot.startTime === time
+        );
+
+        if (roomTaken) return false;
+        const enrolledStudents = allStudents.filter(s => s.enrolledCourses.includes(course.courseCode));
+
+        for (const student of enrolledStudents) {
+            
+            const hasConcurrency = this.assignedSlots.some(slot =>
+                slot.date === date &&
+                slot.startTime === time &&
+                allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+            );
+
+            if (hasConcurrency) return false;
+
+            
+            if (!this.checkDailyLimit(student, date, allStudents)) {
+                return false;
+            }
+
+            
+            if (!this.checkConsecutiveGap(student, time, date, allStudents)) {
+                return false;
+            }
+        }
+
+        return true;
     }
+        //TODO: @emre
+
 
     // requirement 7
     checkDailyLimit(student, date, allStudents) {
