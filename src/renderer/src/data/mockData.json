@@ -1,0 +1,225 @@
+{
+    "recentProjects": [
+        {
+            "id": "proj-001",
+            "name": "Fall 2024 Finals",
+            "path": "/Users/demo/Documents/TimeScroll/fall-2024-finals.tscroll",
+            "lastModified": "2024-12-18T14:30:00Z"
+        },
+        {
+            "id": "proj-002",
+            "name": "Spring 2024 Midterms",
+            "path": "/Users/demo/Documents/TimeScroll/spring-2024-midterms.tscroll",
+            "lastModified": "2024-05-10T09:15:00Z"
+        },
+        {
+            "id": "proj-003",
+            "name": "Summer 2024 Retakes",
+            "path": "/Users/demo/Documents/TimeScroll/summer-2024-retakes.tscroll",
+            "lastModified": "2024-07-22T16:45:00Z"
+        }
+    ],
+    "classrooms": [
+        {
+            "classroom_id": "A101",
+            "capacity": 50
+        },
+        {
+            "classroom_id": "B205",
+            "capacity": 30
+        },
+        {
+            "classroom_id": "C302",
+            "capacity": 80
+        }
+    ],
+    "students": [
+        {
+            "student_id": "STU001",
+            "name": "Ahmet Yılmaz"
+        },
+        {
+            "student_id": "STU002",
+            "name": "Elif Demir"
+        },
+        {
+            "student_id": "STU003",
+            "name": "Mehmet Kaya"
+        },
+        {
+            "student_id": "STU004",
+            "name": "Zeynep Arslan"
+        },
+        {
+            "student_id": "STU005",
+            "name": "Can Öztürk"
+        },
+        {
+            "student_id": "STU006",
+            "name": "Ayşe Çelik"
+        },
+        {
+            "student_id": "STU007",
+            "name": "Burak Şahin"
+        },
+        {
+            "student_id": "STU008",
+            "name": "Selin Yıldız"
+        },
+        {
+            "student_id": "STU009",
+            "name": "Emre Koç"
+        },
+        {
+            "student_id": "STU010",
+            "name": "Deniz Aydın"
+        },
+        {
+            "student_id": "STU011",
+            "name": "Gizem Polat"
+        },
+        {
+            "student_id": "STU012",
+            "name": "Oğuz Erdoğan"
+        },
+        {
+            "student_id": "STU013",
+            "name": "İrem Aksoy"
+        },
+        {
+            "student_id": "STU014",
+            "name": "Kaan Özkan"
+        },
+        {
+            "student_id": "STU015",
+            "name": "Merve Tekin"
+        },
+        {
+            "student_id": "STU016",
+            "name": "Tolga Kurt"
+        },
+        {
+            "student_id": "STU017",
+            "name": "Hande Güneş"
+        },
+        {
+            "student_id": "STU018",
+            "name": "Barış Yalçın"
+        },
+        {
+            "student_id": "STU019",
+            "name": "Ceren Doğan"
+        },
+        {
+            "student_id": "STU020",
+            "name": "Serkan Özer"
+        }
+    ],
+    "courses": [
+        {
+            "course_code": "MATH101",
+            "course_name": "Calculus I",
+            "enrolled_students": [
+                "STU001",
+                "STU002",
+                "STU003",
+                "STU004",
+                "STU005",
+                "STU006",
+                "STU007",
+                "STU008"
+            ]
+        },
+        {
+            "course_code": "PHYS201",
+            "course_name": "Physics II",
+            "enrolled_students": [
+                "STU002",
+                "STU004",
+                "STU006",
+                "STU008",
+                "STU010",
+                "STU012"
+            ]
+        },
+        {
+            "course_code": "CS101",
+            "course_name": "Introduction to Programming",
+            "enrolled_students": [
+                "STU001",
+                "STU003",
+                "STU005",
+                "STU009",
+                "STU011",
+                "STU013",
+                "STU015",
+                "STU017",
+                "STU019"
+            ]
+        },
+        {
+            "course_code": "ENG102",
+            "course_name": "English Composition",
+            "enrolled_students": [
+                "STU010",
+                "STU011",
+                "STU012",
+                "STU013",
+                "STU014",
+                "STU015"
+            ]
+        },
+        {
+            "course_code": "HIST110",
+            "course_name": "World History",
+            "enrolled_students": [
+                "STU014",
+                "STU016",
+                "STU018",
+                "STU020"
+            ]
+        }
+    ],
+    "exams": [
+        {
+            "exam_id": "EX001",
+            "course_code": "MATH101",
+            "date": "2024-12-20",
+            "time": "09:00",
+            "duration_minutes": 120,
+            "classroom_id": "C302"
+        },
+        {
+            "exam_id": "EX002",
+            "course_code": "PHYS201",
+            "date": "2024-12-20",
+            "time": "14:00",
+            "duration_minutes": 90,
+            "classroom_id": "A101"
+        },
+        {
+            "exam_id": "EX003",
+            "course_code": "CS101",
+            "date": "2024-12-21",
+            "time": "09:00",
+            "duration_minutes": 120,
+            "classroom_id": "C302"
+        },
+        {
+            "exam_id": "EX004",
+            "course_code": "ENG102",
+            "date": "2024-12-21",
+            "time": "14:00",
+            "duration_minutes": 60,
+            "classroom_id": "B205"
+        },
+        {
+            "exam_id": "EX005",
+            "course_code": "HIST110",
+            "date": "2024-12-22",
+            "time": "10:00",
+            "duration_minutes": 90,
+            "classroom_id": "A101"
+        }
+    ]
+}

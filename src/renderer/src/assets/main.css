@@ -1,3 +1,170 @@
+/* Google Fonts Import - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base Layer Customizations */
+@layer base {
+
+    /* Smooth theme transitions */
+    * {
+        @apply transition-colors duration-200;
+    }
+
+    /* Light mode defaults */
+    body {
+        @apply bg-nord-snow-3 text-nord-polar-1 font-sans;
+    }
+
+    /* Dark mode overrides */
+    .dark body,
+    body.dark {
+        @apply bg-nord-polar-1 text-nord-snow-2;
+    }
+
+    /* Heading styles */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading font-medium tracking-wide;
+    }
+
+    h1 {
+        @apply text-3xl;
+    }
+
+    h2 {
+        @apply text-2xl;
+    }
+
+    h3 {
+        @apply text-xl;
+    }
+
+    /* Focus styles for accessibility */
+    *:focus-visible {
+        @apply outline-none ring-2 ring-nord-frost-3 ring-offset-2;
+    }
+
+    .dark *:focus-visible {
+        @apply ring-nord-frost-2 ring-offset-nord-polar-1;
+    }
+}
+
+/* Component Layer */
+@layer components {
+
+    /* Card component */
+    .card {
+        @apply bg-white rounded-xl shadow-frost p-4;
+    }
+
+    .dark .card {
+        @apply bg-nord-polar-2 shadow-none border border-nord-polar-3;
+    }
+
+    /* Button base */
+    .btn {
+        @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+        @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+
+    .btn-primary {
+        @apply bg-nord-frost-3 text-white hover:bg-nord-frost-4;
+        @apply focus:ring-nord-frost-3;
+    }
+
+    .dark .btn-primary {
+        @apply bg-nord-frost-2 text-nord-polar-1 hover:bg-nord-frost-1;
+    }
+
+    .btn-secondary {
+        @apply bg-nord-snow-1 text-nord-polar-2 hover:bg-nord-snow-2;
+        @apply focus:ring-nord-frost-3;
+    }
+
+    .dark .btn-secondary {
+        @apply bg-nord-polar-3 text-nord-snow-2 hover:bg-nord-polar-4;
+    }
+
+    /* Input styles */
+    .input {
+        @apply w-full px-3 py-2 rounded-lg border border-nord-snow-1;
+        @apply bg-white text-nord-polar-1;
+        @apply focus:border-nord-frost-3 focus:ring-1 focus:ring-nord-frost-3;
+        @apply placeholder:text-nord-polar-4/60;
+    }
+
+    .dark .input {
+        @apply border-nord-polar-3 bg-nord-polar-2 text-nord-snow-2;
+        @apply focus:border-nord-frost-2 focus:ring-nord-frost-2;
+        @apply placeholder:text-nord-snow-1/40;
+    }
+
+    /* Sidebar navigation item */
+    .nav-item {
+        @apply flex items-center gap-3 px-3 py-2.5 rounded-lg;
+        @apply text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1;
+        @apply transition-all duration-200 cursor-pointer;
+    }
+
+    .nav-item.active {
+        @apply bg-nord-frost-3/10 text-nord-frost-4 font-medium;
+    }
+
+    .dark .nav-item {
+        @apply text-nord-snow-1 hover:bg-nord-polar-3 hover:text-nord-snow-2;
+    }
+
+    .dark .nav-item.active {
+        @apply bg-nord-frost-3/20 text-nord-frost-2;
+    }
+
+    /* Loading spinner */
+    .spinner {
+        @apply w-8 h-8 border-4 border-nord-snow-1 border-t-nord-frost-3 rounded-full animate-spin;
+    }
+
+    .dark .spinner {
+        @apply border-nord-polar-3 border-t-nord-frost-2;
+    }
+}
+
+/* Utility Layer */
+@layer utilities {
+
+    /* Scrollbar styling for frost theme */
+    .scrollbar-frost::-webkit-scrollbar {
+        @apply w-2;
+    }
+
+    .scrollbar-frost::-webkit-scrollbar-track {
+        @apply bg-nord-snow-2 rounded-full;
+    }
+
+    .scrollbar-frost::-webkit-scrollbar-thumb {
+        @apply bg-nord-frost-3/40 rounded-full hover:bg-nord-frost-3/60;
+    }
+
+    .dark .scrollbar-frost::-webkit-scrollbar-track {
+        @apply bg-nord-polar-2;
+    }
+
+    .dark .scrollbar-frost::-webkit-scrollbar-thumb {
+        @apply bg-nord-frost-2/30 hover:bg-nord-frost-2/50;
+    }
+
+    /* Text selection colors */
+    ::selection {
+        @apply bg-nord-frost-2/30 text-nord-polar-1;
+    }
+
+    .dark ::selection {
+        @apply bg-nord-frost-2/40 text-nord-snow-2;
+    }
+}
