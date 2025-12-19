@@ -199,17 +199,17 @@ export default function CalendarGrid({
 
             {/* Calendar Grid */}
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse table-fixed">
+                <table className="w-full border-collapse min-w-[900px]">
                     {/* Header row with dates */}
                     <thead>
                         <tr>
-                            <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-16">
+                            <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-16 min-w-[60px]">
                                 Time
                             </th>
                             {weekDays.map(date => (
                                 <th
                                     key={date}
-                                    className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3
+                                    className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3 min-w-[110px]
                                         ${isToday(date)
                                             ? 'text-nord-frost-3 dark:text-nord-frost-2 bg-nord-frost-3/5 dark:bg-nord-frost-2/10'
                                             : 'text-nord-polar-3 dark:text-nord-snow-1/70'

@@ -1,6 +1,7 @@
 import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/NavigationContext';
 import Layout from './components/Layout';
 import CalendarGrid from './components/CalendarGrid';
+import ClassroomViewComponent from './components/ClassroomView';
 import Spinner from './components/Spinner';
 
 /**
@@ -20,24 +21,7 @@ function DashboardView() {
 }
 
 function ClassroomView() {
-    const { navigateTo } = useNavigation();
-
-    return (
-        <div className="space-y-4">
-            <div className="card">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
-                    Room selection and timetable will be implemented in Section 4.
-                </p>
-                {/* Demo navigation */}
-                <button
-                    onClick={() => navigateTo('course', { courseCode: 'CS101', courseName: 'Intro to Programming' })}
-                    className="btn btn-secondary"
-                >
-                    Demo: View Course from Room
-                </button>
-            </div>
-        </div>
-    );
+    return <ClassroomViewComponent />;
 }
 
 function StudentView() {

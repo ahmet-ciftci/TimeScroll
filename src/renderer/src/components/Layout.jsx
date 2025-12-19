@@ -165,14 +165,8 @@ export default function Layout({ children }) {
                     })}
                 </nav>
 
-                {/* Footer area */}
-                <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3">
-                    {!isSidebarCollapsed && (
-                        <p className="text-xs text-nord-polar-4/60 dark:text-nord-snow-1/40 text-center">
-                            v1.0.0
-                        </p>
-                    )}
-                </div>
+                {/* Footer spacer */}
+                <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3" />
             </aside>
 
             {/* Main Content Area */}
