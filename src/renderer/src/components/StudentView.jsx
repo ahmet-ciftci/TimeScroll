@@ -26,7 +26,7 @@ function HighlightedText({ text, query }) {
 }
 
 export default function StudentView() {
-    const { viewParams } = useNavigation();
+    const { viewParams, navigateTo } = useNavigation();
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -36,7 +36,7 @@ export default function StudentView() {
     // Check if we have a student from navigation params
     const studentFromParams = viewParams.studentId;
 
-    // Load students on mount
+    // Load students on mount and sync with navigation params
     useEffect(() => {
         async function loadStudents() {
             setLoading(true);
@@ -50,6 +50,9 @@ export default function StudentView() {
                     if (foundStudent) {
                         setSelectedStudent(foundStudent);
                     }
+                } else {
+                    // Clear selection when params are empty (back navigation to cleared state)
+                    setSelectedStudent(null);
                 }
             } catch (error) {
                 console.error('Failed to load students:', error);
@@ -69,17 +72,21 @@ export default function StudentView() {
         );
     }, [students, searchQuery]);
 
-    // Handle student selection
+    // Handle student selection - save to navigation params
     const handleSelectStudent = (student) => {
         setSelectedStudent(student);
         setSearchQuery('');
         setIsDropdownOpen(false);
+        // Save selection to navigation state so it persists on back navigation
+        navigateTo('student', { studentId: student.student_id });
     };
 
     // Handle clearing selection
     const handleClearSelection = () => {
         setSelectedStudent(null);
         setSearchQuery('');
+        // Clear from navigation params too
+        navigateTo('student', {});
     };
 
     if (loading) {

@@ -38,7 +38,7 @@ export default function CourseView() {
     // Check if we have a course from navigation params
     const courseFromParams = viewParams.courseCode;
 
-    // Load all data
+    // Load all data and sync with navigation params
     useEffect(() => {
         async function loadData() {
             setLoading(true);
@@ -63,6 +63,11 @@ export default function CourseView() {
                             : examsData.find(e => e.course_code === courseFromParams);
                         setExam(foundExam);
                     }
+                } else {
+                    // Clear selection when params are empty (back navigation to cleared state)
+                    setSelectedCourse(null);
+                    setExam(null);
+                    setEnrolledStudentIds([]);
                 }
             } catch (error) {
                 console.error('Failed to load data:', error);
@@ -96,11 +101,13 @@ export default function CourseView() {
         );
     }, [courses, searchQuery]);
 
-    // Handle course selection
+    // Handle course selection - save to navigation params
     const handleSelectCourse = (course) => {
         setSelectedCourse(course);
         setSearchQuery('');
         setIsDropdownOpen(false);
+        // Save selection to navigation state so it persists on back navigation
+        navigateTo('course', { courseCode: course.course_code });
     };
 
     // Handle clearing selection
@@ -109,6 +116,8 @@ export default function CourseView() {
         setSearchQuery('');
         setExam(null);
         setEnrolledStudentIds([]);
+        // Clear from navigation params too
+        navigateTo('course', {});
     };
 
     // Navigate to student view

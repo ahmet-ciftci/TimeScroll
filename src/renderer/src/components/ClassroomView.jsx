@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getClassrooms } from '../services/dataService';
+import { useNavigation } from '../contexts/NavigationContext';
 import CalendarGrid from './CalendarGrid';
 import Spinner from './Spinner';
 
@@ -25,19 +26,32 @@ function HighlightedText({ text, query }) {
 }
 
 export default function ClassroomView() {
+    const { viewParams, navigateTo } = useNavigation();
     const [classrooms, setClassrooms] = useState([]);
+    // Initialize from viewParams if available (restores state on back navigation)
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // Load classrooms on mount
+    // Load classrooms on mount and sync with navigation params
     useEffect(() => {
         async function loadClassrooms() {
             setLoading(true);
             try {
                 const data = await getClassrooms();
                 setClassrooms(data);
+
+                // Restore selected room from viewParams after classrooms load
+                if (viewParams.classroomId) {
+                    const room = data.find(r => r.classroom_id === viewParams.classroomId);
+                    if (room) {
+                        setSelectedRoom(room);
+                    }
+                } else {
+                    // Clear selection when params are empty (back navigation to cleared state)
+                    setSelectedRoom(null);
+                }
             } catch (error) {
                 console.error('Failed to load classrooms:', error);
             } finally {
@@ -45,7 +59,7 @@ export default function ClassroomView() {
             }
         }
         loadClassrooms();
-    }, []);
+    }, [viewParams.classroomId]);
 
     // Filter classrooms based on search
     const filteredClassrooms = useMemo(() => {
@@ -56,17 +70,21 @@ export default function ClassroomView() {
         );
     }, [classrooms, searchQuery]);
 
-    // Handle room selection
+    // Handle room selection - save to navigation params
     const handleSelectRoom = (room) => {
         setSelectedRoom(room);
         setSearchQuery('');
         setIsDropdownOpen(false);
+        // Save selection to navigation state so it persists on back navigation
+        navigateTo('classroom', { classroomId: room.classroom_id });
     };
 
     // Handle clearing selection
     const handleClearSelection = () => {
         setSelectedRoom(null);
         setSearchQuery('');
+        // Clear from navigation params too
+        navigateTo('classroom', {});
     };
 
     if (loading) {
