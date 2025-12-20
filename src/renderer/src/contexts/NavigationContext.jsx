@@ -15,7 +15,7 @@ export const VIEW_CONFIG = {
     classroom: { title: 'Classroom View', showInNav: true },
     student: { title: 'Student View', showInNav: true },
     course: { title: 'Course View', showInNav: true },
-    welcome: { title: 'Welcome', showInNav: false },
+    welcome: { title: 'Welcome', showInNav: true },
 };
 
 const STORAGE_KEYS = {
@@ -24,9 +24,9 @@ const STORAGE_KEYS = {
 
 export function NavigationProvider({ children }) {
     // Current view state
-    const [currentView, setCurrentView] = useState('dashboard');
+    const [currentView, setCurrentView] = useState('welcome');
     const [viewParams, setViewParams] = useState({});
-    const [viewHistory, setViewHistory] = useState([{ view: 'dashboard', params: {} }]);
+    const [viewHistory, setViewHistory] = useState([{ view: 'welcome', params: {} }]);
 
     // Sidebar state with localStorage persistence
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {

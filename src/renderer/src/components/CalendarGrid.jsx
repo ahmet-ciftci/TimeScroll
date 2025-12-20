@@ -32,7 +32,11 @@ function getWeekDays(monday) {
     for (let i = 0; i < 7; i++) {
         const day = new Date(monday);
         day.setDate(monday.getDate() + i);
-        days.push(day.toISOString().split('T')[0]); // Format: YYYY-MM-DD
+        // Use local date formatting to avoid timezone issues
+        const year = day.getFullYear();
+        const month = String(day.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(day.getDate()).padStart(2, '0');
+        days.push(`${year}-${month}-${dayNum}`); // Format: YYYY-MM-DD
     }
     return days;
 }
@@ -63,7 +67,11 @@ function findExamAtSlot(exams, date, time) {
 
 // Check if a date is today
 function isToday(dateString) {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
     return dateString === today;
 }
 

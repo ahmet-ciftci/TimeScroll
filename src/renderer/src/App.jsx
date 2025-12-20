@@ -4,6 +4,7 @@ import CalendarGrid from './components/CalendarGrid';
 import ClassroomViewComponent from './components/ClassroomView';
 import StudentViewComponent from './components/StudentView';
 import CourseViewComponent from './components/CourseView';
+import WelcomeViewComponent from './components/WelcomeView';
 import Spinner from './components/Spinner';
 
 /**
@@ -35,31 +36,7 @@ function CourseView() {
 }
 
 function WelcomeView() {
-    const { navigateToRoot } = useNavigation();
-
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
-            <div className="text-center">
-                <h1 className="font-heading text-4xl font-semibold text-nord-frost-4 dark:text-nord-frost-2 mb-2">
-                    TimeScroll
-                </h1>
-                <p className="text-nord-polar-3 dark:text-nord-snow-1">
-                    Examination Schedule Automation
-                </p>
-            </div>
-            <div className="card max-w-md w-full text-center">
-                <p className="text-nord-polar-3 dark:text-nord-snow-1 mb-4">
-                    Welcome screen and recent projects will be implemented in Section 7.
-                </p>
-                <button
-                    onClick={() => navigateToRoot('dashboard')}
-                    className="btn btn-primary"
-                >
-                    Go to Dashboard
-                </button>
-            </div>
-        </div>
-    );
+    return <WelcomeViewComponent />;
 }
 
 // View registry
