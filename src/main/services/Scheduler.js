@@ -124,12 +124,26 @@ class Scheduler {
     return true;
 }
 
-    // requirement 6
-    checkConsecutiveGap(student, newTime, date, allStudents) {
-        // TODO: @emre
-        return true;
-    }
+checkConsecutiveGap(student, newTime, date, allStudents) {
+    const studentDailyExams = this.assignedSlots.filter(slot =>
+        slot.date === date &&
+        allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+    );
 
+    const newStartMinutes = this.parseTime(newTime);
+    const duration = this.globalSettings.examDuration;
+
+    for (const exam of studentDailyExams) {
+        const existingStartMinutes = this.parseTime(exam.startTime);
+        const diff = Math.abs(newStartMinutes - existingStartMinutes);
+
+        if (diff <= duration) {
+            return false;
+        }
+    }
+    return true;
+}
+    
     generateTimeSlots() {
         const slots = [];
         let currentMin = this.parseTime(this.globalSettings.dayStartTime);
