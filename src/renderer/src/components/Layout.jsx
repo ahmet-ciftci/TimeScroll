@@ -114,6 +114,26 @@ function MoonIcon({ className }) {
     );
 }
 
+function ExportIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+    );
+}
+
+function HelpIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+    );
+}
+
 export default function Layout({ children }) {
     const {
         activeNavItem,
@@ -201,8 +221,47 @@ export default function Layout({ children }) {
                     })}
                 </nav>
 
-                {/* Footer with theme toggle */}
-                <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3">
+                {/* Footer with theme toggle, export, and help */}
+                <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3 space-y-1">
+                    {/* Export Button */}
+                    <button
+                        onClick={() => {/* TODO: Export functionality */ }}
+                        className={`
+                            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                            text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                            dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                            transition-all duration-200 cursor-pointer
+                            ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                        `}
+                        title={isSidebarCollapsed ? 'Export' : undefined}
+                        aria-label="Export schedule"
+                    >
+                        <ExportIcon className="w-5 h-5 flex-shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <span className="truncate">Export</span>
+                        )}
+                    </button>
+
+                    {/* Help Button */}
+                    <button
+                        onClick={() => {/* TODO: Help functionality */ }}
+                        className={`
+                            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                            text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                            dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                            transition-all duration-200 cursor-pointer
+                            ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                        `}
+                        title={isSidebarCollapsed ? 'Help' : undefined}
+                        aria-label="Help"
+                    >
+                        <HelpIcon className="w-5 h-5 flex-shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <span className="truncate">Help</span>
+                        )}
+                    </button>
+
+                    {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
                         className={`
