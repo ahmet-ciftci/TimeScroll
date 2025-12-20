@@ -226,7 +226,7 @@ export default function CalendarGrid({
                     <tbody>
                         {TIME_SLOTS.map(time => (
                             <tr key={time} className="h-20 hover:bg-nord-snow-2/30 dark:hover:bg-nord-polar-3/20">
-                                <td className="p-2 text-sm font-medium text-nord-polar-4 dark:text-nord-snow-1/60 border-b border-nord-snow-1 dark:border-nord-polar-3 whitespace-nowrap align-middle">
+                                <td className="p-2 text-sm font-medium text-nord-polar-4 dark:text-nord-snow-1/60 border-b border-nord-snow-1 dark:border-nord-polar-3 whitespace-nowrap align-top pt-3">
                                     {time}
                                 </td>
 
@@ -234,21 +234,28 @@ export default function CalendarGrid({
                                     const exam = findExamAtSlot(exams, date, time);
                                     const todayCell = isToday(date);
 
+                                    // Calculate height based on duration (60min = 76px)
+                                    const baseHeight = 76;
+                                    const examHeight = exam
+                                        ? Math.round((exam.duration_minutes / 60) * baseHeight)
+                                        : baseHeight;
+
                                     return (
                                         <td
                                             key={`${time}-${date}`}
-                                            className={`p-1 border-b border-nord-snow-1 dark:border-nord-polar-3
+                                            className={`p-1 border-b border-nord-snow-1 dark:border-nord-polar-3 relative
                                                 ${todayCell ? 'bg-nord-frost-3/5 dark:bg-nord-frost-2/5' : ''}`}
                                         >
-                                            {/* Fixed height wrapper to prevent row size changes */}
-                                            <div className="h-[72px] overflow-hidden">
+                                            {/* Container for exam card - relative positioning base */}
+                                            <div className="h-[72px]">
                                                 {exam ? (
                                                     <button
                                                         onClick={() => handleExamClick(exam)}
-                                                        className="w-full h-full text-left p-2 rounded-lg bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
+                                                        style={{ height: `${examHeight}px` }}
+                                                        className="absolute left-1 right-1 text-left p-2 rounded-lg bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
                                                                    hover:bg-nord-frost-3/25 dark:hover:bg-nord-frost-3/35
                                                                    border border-nord-frost-3/30 dark:border-nord-frost-2/30
-                                                                   transition-colors cursor-pointer group overflow-hidden"
+                                                                   transition-colors cursor-pointer group overflow-hidden z-10"
                                                     >
                                                         <div className="font-medium text-sm text-nord-frost-4 dark:text-nord-frost-2 group-hover:text-nord-frost-3 dark:group-hover:text-nord-frost-1 truncate leading-tight">
                                                             {exam.course_code}

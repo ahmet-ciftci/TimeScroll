@@ -7,11 +7,11 @@ module.exports = {
             colors: {
                 // Skyrim Nord Theme - Light Mode Base
                 nord: {
-                    // Polar Night (Dark backgrounds for dark mode)
-                    'polar-1': '#2E3440', // Darkest
-                    'polar-2': '#3B4252',
-                    'polar-3': '#434C5E',
-                    'polar-4': '#4C566A', // Lightest dark
+                    // Polar Night (Dark backgrounds for dark mode) - Near-black variant
+                    'polar-1': '#0F1115', // Darkest
+                    'polar-2': '#181B21',
+                    'polar-3': '#22262E',
+                    'polar-4': '#2C313A', // Lightest dark
 
                     // Snow Storm (Light backgrounds for light mode)
                     'snow-1': '#D8DEE9', // Darkest light

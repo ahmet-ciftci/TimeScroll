@@ -1,4 +1,5 @@
 import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/NavigationContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import CalendarGrid from './components/CalendarGrid';
 import ClassroomViewComponent from './components/ClassroomView';
@@ -65,8 +66,10 @@ function AppContent() {
 // Main app wrapper with providers
 export default function App() {
     return (
-        <NavigationProvider>
-            <AppContent />
-        </NavigationProvider>
+        <ThemeProvider>
+            <NavigationProvider>
+                <AppContent />
+            </NavigationProvider>
+        </ThemeProvider>
     );
 }
