@@ -116,6 +116,14 @@ function MoonIcon({ className }) {
     );
 }
 
+function ChevronIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+        </svg>
+    );
+}
+
 function ExportIcon({ className }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -141,6 +149,7 @@ export default function Layout({ children }) {
         activeNavItem,
         currentViewConfig,
         viewParams,
+        viewHistory,
         isSidebarCollapsed,
         canGoBack,
         navigateToRoot,
@@ -149,20 +158,54 @@ export default function Layout({ children }) {
     } = useNavigation();
     const { isDarkMode, toggleTheme } = useTheme();
 
-    // Build the page title
-    const getPageTitle = () => {
-        let title = currentViewConfig.title;
-        // Add context for specific views
-        if (viewParams.courseCode) {
-            title = `${viewParams.courseCode}`;
-        }
-        if (viewParams.studentName) {
-            title = viewParams.studentName;
-        }
-        if (viewParams.classroomId) {
-            title = `Room ${viewParams.classroomId}`;
-        }
-        return title;
+    // Mock project name (will come from project context later)
+    const projectName = activeNavItem !== 'welcome' ? 'Fall 2024 Finals' : null;
+
+    // Helper to get label from history entry params
+    const getParamLabel = (params) => {
+        if (params.courseCode) return params.courseCode;
+        if (params.studentId) return params.studentId;
+        if (params.classroomId) return `Room ${params.classroomId}`;
+        return null;
+    };
+
+    // Build breadcrumbs from navigation history
+    const getBreadcrumbs = () => {
+        const crumbs = [];
+
+        // Skip if on welcome screen
+        if (activeNavItem === 'welcome') return crumbs;
+
+        // Process navigation history
+        viewHistory.forEach((entry, index) => {
+            // Skip welcome entries
+            if (entry.view === 'welcome') return;
+
+            const paramLabel = getParamLabel(entry.params);
+
+            if (paramLabel) {
+                // Only add if this label isn't already the last crumb (avoid duplicates)
+                const lastCrumb = crumbs[crumbs.length - 1];
+                if (!lastCrumb || lastCrumb.label !== paramLabel) {
+                    crumbs.push({
+                        label: paramLabel,
+                        // Make clickable if not the current/last item
+                        historyIndex: index
+                    });
+                }
+            } else if (crumbs.length === 0) {
+                // First entry without params - show the view name as starting point
+                const viewConfig = VIEW_CONFIG[entry.view];
+                if (viewConfig?.title) {
+                    crumbs.push({
+                        label: viewConfig.title,
+                        historyIndex: index
+                    });
+                }
+            }
+        });
+
+        return crumbs;
     };
 
     return (
@@ -301,23 +344,67 @@ export default function Layout({ children }) {
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Header with back button and page title */}
+                {/* Header with back button, project name, and breadcrumbs */}
                 <header className="flex items-center gap-4 h-14 px-4 border-b border-nord-snow-1 dark:border-nord-polar-3 bg-white dark:bg-nord-polar-2">
-                    {canGoBack && (
-                        <button
-                            onClick={goBack}
-                            className="flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg
-                                       text-nord-polar-3 dark:text-nord-snow-1
-                                       hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3
-                                       transition-colors"
-                        >
-                            <BackIcon className="w-5 h-5" />
-                            <span className="text-sm font-medium">Back</span>
-                        </button>
+                    <button
+                        onClick={canGoBack ? goBack : undefined}
+                        disabled={!canGoBack}
+                        className={`flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg transition-colors flex-shrink-0
+                            ${canGoBack
+                                ? 'text-nord-polar-3 dark:text-nord-snow-1 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 cursor-pointer'
+                                : 'text-nord-polar-4/40 dark:text-nord-snow-1/30 cursor-not-allowed'
+                            }`}
+                    >
+                        <BackIcon className="w-5 h-5" />
+                        <span className="text-sm font-medium">Back</span>
+                    </button>
+
+                    {/* Divider */}
+                    {projectName && (
+                        <div className="w-px h-6 bg-nord-snow-1 dark:bg-nord-polar-3" />
                     )}
-                    <h2 className="font-heading text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 truncate">
-                        {getPageTitle()}
-                    </h2>
+
+                    {/* Project Name & Breadcrumbs */}
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {projectName && (
+                            <span className="font-medium text-nord-polar-2 dark:text-nord-snow-2 flex-shrink-0">
+                                {projectName}
+                            </span>
+                        )}
+
+                        {getBreadcrumbs().length > 0 && projectName && (
+                            <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40 flex-shrink-0" />
+                        )}
+
+                        {getBreadcrumbs().map((crumb, index, arr) => {
+                            const isLast = index === arr.length - 1;
+                            return (
+                                <div key={index} className="flex items-center gap-2 min-w-0">
+                                    {index > 0 && (
+                                        <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40 flex-shrink-0" />
+                                    )}
+                                    {!isLast ? (
+                                        <button
+                                            onClick={() => {
+                                                // Navigate back to that point in history
+                                                // This means going back (arr.length - 1 - index) times
+                                                for (let i = 0; i < arr.length - 1 - index; i++) {
+                                                    goBack();
+                                                }
+                                            }}
+                                            className="text-sm text-nord-polar-4 dark:text-nord-snow-1/70 hover:text-nord-frost-4 dark:hover:text-nord-frost-2 truncate"
+                                        >
+                                            {crumb.label}
+                                        </button>
+                                    ) : (
+                                        <span className="text-sm text-nord-polar-3 dark:text-nord-snow-1 truncate">
+                                            {crumb.label}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </header>
 
                 {/* Content */}
