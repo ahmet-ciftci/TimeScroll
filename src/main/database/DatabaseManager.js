@@ -217,6 +217,16 @@ class DBManager {
         `);
         return stmt.all();
     }
+
+    getStudentCourses(studentId) {
+        const stmt = this.db.prepare('SELECT course_code FROM enrollments WHERE student_id = ?');
+        const rows = stmt.all(studentId);
+        return rows.map(row => row.course_code);
+    }
+
+    getAllStudents() {
+        return this.db.prepare('SELECT student_id FROM students').all();
+    }
 }
 
 module.exports = new DBManager();
