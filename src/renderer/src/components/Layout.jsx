@@ -69,8 +69,8 @@ export default function Layout({ children }) {
         theme: 'light'
     });
 
-    // Mock project name (will come from project context later)
-    const projectName = activeNavItem !== 'welcome' ? 'Fall 2024 Finals' : null;
+    // TODO: Get project name from project context
+    const projectName = null;
 
     // Helper to get label from history entry params
     const getParamLabel = (params) => {

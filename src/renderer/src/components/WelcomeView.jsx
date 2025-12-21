@@ -30,12 +30,8 @@ export default function WelcomeView() {
     const { navigateToRoot } = useNavigation();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Mock recent projects (will come from electron-store later)
-    const recentProjects = [
-        { id: 1, name: 'Fall 2024 Finals', createdAt: '2024-12-18' },
-        { id: 2, name: 'Midterm Exams', createdAt: '2024-12-10' },
-        { id: 3, name: 'Spring 2024', createdAt: '2024-06-15' },
-    ];
+    // TODO: Fetch recent projects from electron-store
+    const recentProjects = [];
 
     return (
         <div className="min-h-full flex flex-col">
