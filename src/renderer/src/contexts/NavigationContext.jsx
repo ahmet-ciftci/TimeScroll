@@ -77,6 +77,17 @@ export function NavigationProvider({ children }) {
         }
     }, [viewHistory]);
 
+    // Go back N steps in history (for breadcrumb navigation)
+    const goBackN = useCallback((steps) => {
+        if (steps <= 0 || viewHistory.length <= steps) return;
+
+        const newHistory = viewHistory.slice(0, -steps);
+        const targetEntry = newHistory[newHistory.length - 1];
+        setViewHistory(newHistory);
+        setCurrentView(targetEntry.view);
+        setViewParams(targetEntry.params);
+    }, [viewHistory]);
+
     // Check if can go back
     const canGoBack = viewHistory.length > 1;
 
@@ -115,6 +126,7 @@ export function NavigationProvider({ children }) {
         navigateTo,
         navigateToRoot,
         goBack,
+        goBackN,
         toggleSidebar,
     };
 

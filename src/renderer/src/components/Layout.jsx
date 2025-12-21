@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigation, VIEW_CONFIG } from '../contexts/NavigationContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { exportCalendarToPDF } from '../services/pdfExportService';
@@ -154,6 +155,7 @@ export default function Layout({ children }) {
         canGoBack,
         navigateToRoot,
         goBack,
+        goBackN,
         toggleSidebar,
     } = useNavigation();
     const { isDarkMode, toggleTheme } = useTheme();
@@ -170,7 +172,7 @@ export default function Layout({ children }) {
     };
 
     // Build breadcrumbs from navigation history
-    const getBreadcrumbs = () => {
+    const getBreadcrumbs = useCallback(() => {
         const crumbs = [];
 
         // Skip if on welcome screen
@@ -189,7 +191,6 @@ export default function Layout({ children }) {
                 if (!lastCrumb || lastCrumb.label !== paramLabel) {
                     crumbs.push({
                         label: paramLabel,
-                        // Make clickable if not the current/last item
                         historyIndex: index
                     });
                 }
@@ -206,7 +207,55 @@ export default function Layout({ children }) {
         });
 
         return crumbs;
-    };
+    }, [activeNavItem, viewHistory]);
+
+    // Breadcrumb overflow detection
+    const breadcrumbContainerRef = useRef(null);
+    const [hiddenCount, setHiddenCount] = useState(0);
+    const allCrumbs = getBreadcrumbs();
+    const prevCrumbsLengthRef = useRef(allCrumbs.length);
+
+    // Reset hiddenCount when breadcrumbs decrease (navigation back)
+    useEffect(() => {
+        if (allCrumbs.length < prevCrumbsLengthRef.current) {
+            // Navigated back - reset to 0, let overflow detection build it up again
+            setHiddenCount(0);
+        }
+        prevCrumbsLengthRef.current = allCrumbs.length;
+    }, [allCrumbs.length]);
+
+    useEffect(() => {
+        const container = breadcrumbContainerRef.current;
+        if (!container) return;
+
+        let rafId = null;
+
+        const checkOverflow = () => {
+            // Cancel any pending RAF
+            if (rafId) cancelAnimationFrame(rafId);
+
+            rafId = requestAnimationFrame(() => {
+                // Only increase hiddenCount when overflowing
+                // Never decrease automatically (prevents oscillation)
+                if (container.scrollWidth > container.clientWidth + 5) { // 5px buffer
+                    setHiddenCount(prev => Math.min(prev + 1, allCrumbs.length - 1));
+                }
+            });
+        };
+
+        // Initial check after render
+        const timeout = setTimeout(checkOverflow, 50);
+
+        // Watch for size changes
+        const observer = new ResizeObserver(checkOverflow);
+        observer.observe(container);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(timeout);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }, [allCrumbs.length, hiddenCount]);
 
     return (
         <div className="flex h-screen bg-nord-snow-3 dark:bg-nord-polar-1">
@@ -372,38 +421,48 @@ export default function Layout({ children }) {
                             </span>
                         )}
 
-                        {getBreadcrumbs().length > 0 && projectName && (
+                        {allCrumbs.length > 0 && projectName && (
                             <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40 flex-shrink-0" />
                         )}
 
-                        {getBreadcrumbs().map((crumb, index, arr) => {
-                            const isLast = index === arr.length - 1;
-                            return (
-                                <div key={index} className="flex items-center gap-2 min-w-0">
-                                    {index > 0 && (
-                                        <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40 flex-shrink-0" />
-                                    )}
-                                    {!isLast ? (
-                                        <button
-                                            onClick={() => {
-                                                // Navigate back to that point in history
-                                                // This means going back (arr.length - 1 - index) times
-                                                for (let i = 0; i < arr.length - 1 - index; i++) {
-                                                    goBack();
-                                                }
-                                            }}
-                                            className="text-sm text-nord-polar-4 dark:text-nord-snow-1/70 hover:text-nord-frost-4 dark:hover:text-nord-frost-2 truncate"
-                                        >
-                                            {crumb.label}
-                                        </button>
-                                    ) : (
-                                        <span className="text-sm text-nord-polar-3 dark:text-nord-snow-1 truncate">
-                                            {crumb.label}
-                                        </span>
-                                    )}
+                        {/* Breadcrumb items with dynamic overflow */}
+                        <div ref={breadcrumbContainerRef} className="flex items-center gap-2 min-w-0 overflow-hidden">
+                            {/* Show ellipsis if there are hidden crumbs */}
+                            {hiddenCount > 0 && (
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <span className="text-sm text-nord-polar-4/60 dark:text-nord-snow-1/40">...</span>
+                                    <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40" />
                                 </div>
-                            );
-                        })}
+                            )}
+
+                            {allCrumbs.slice(hiddenCount).map((crumb, index, visibleArr) => {
+                                const isLast = index === visibleArr.length - 1;
+                                // The actual index in allCrumbs = hiddenCount + index
+                                const actualIndex = hiddenCount + index;
+                                // Steps to go back = total crumbs - 1 - actualIndex
+                                const stepsBack = allCrumbs.length - 1 - actualIndex;
+
+                                return (
+                                    <div key={index} className="flex items-center gap-2 flex-shrink-0">
+                                        {index > 0 && (
+                                            <ChevronIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40" />
+                                        )}
+                                        {!isLast ? (
+                                            <button
+                                                onClick={() => goBackN(stepsBack)}
+                                                className="text-sm text-nord-polar-4 dark:text-nord-snow-1/70 hover:text-nord-frost-4 dark:hover:text-nord-frost-2 whitespace-nowrap"
+                                            >
+                                                {crumb.label}
+                                            </button>
+                                        ) : (
+                                            <span className="text-sm text-nord-polar-3 dark:text-nord-snow-1 whitespace-nowrap">
+                                                {crumb.label}
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </header>
 
