@@ -13,11 +13,11 @@ import { getExams } from '../services/dataService';
 
 // Navigation items configuration (only items marked showInNav)
 const NAV_ITEMS = [
-    { id: 'welcome', label: 'Home', icon: HomeIcon },
-    { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { id: 'classroom', label: 'Classroom', icon: ClassroomIcon },
-    { id: 'student', label: 'Student', icon: StudentIcon },
-    { id: 'course', label: 'Course', icon: CourseIcon },
+    { id: 'welcome', label: 'Home', icon: HomeIcon, requiresProject: false },
+    { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon, requiresProject: true },
+    { id: 'classroom', label: 'Classroom', icon: ClassroomIcon, requiresProject: true },
+    { id: 'student', label: 'Student', icon: StudentIcon, requiresProject: true },
+    { id: 'course', label: 'Course', icon: CourseIcon, requiresProject: true },
 ];
 
 // SVG Icons as components
@@ -199,57 +199,61 @@ export default function Layout({ children }) {
 
                 {/* Navigation Items */}
                 <nav className="flex-1 p-2 space-y-1">
-                    {NAV_ITEMS.map(item => {
-                        const Icon = item.icon;
-                        const isActive = activeNavItem === item.id;
+                    {NAV_ITEMS
+                        .filter(item => !item.requiresProject || activeNavItem !== 'welcome')
+                        .map(item => {
+                            const Icon = item.icon;
+                            const isActive = activeNavItem === item.id;
 
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => navigateToRoot(item.id)}
-                                className={`
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => navigateToRoot(item.id)}
+                                    className={`
                                     nav-item w-full
                                     ${isActive ? 'active' : ''}
                                     ${isSidebarCollapsed ? 'justify-center px-0' : ''}
                                 `}
-                                title={isSidebarCollapsed ? item.label : undefined}
-                            >
-                                <Icon className="w-5 h-5 flex-shrink-0" />
-                                {!isSidebarCollapsed && (
-                                    <span className="truncate">{item.label}</span>
-                                )}
-                            </button>
-                        );
-                    })}
+                                    title={isSidebarCollapsed ? item.label : undefined}
+                                >
+                                    <Icon className="w-5 h-5 flex-shrink-0" />
+                                    {!isSidebarCollapsed && (
+                                        <span className="truncate">{item.label}</span>
+                                    )}
+                                </button>
+                            );
+                        })}
                 </nav>
 
                 {/* Footer with theme toggle, export, and help */}
                 <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3 space-y-1">
-                    {/* Export Button */}
-                    <button
-                        onClick={async () => {
-                            try {
-                                const exams = await getExams();
-                                await exportCalendarToPDF(exams, 'exam-schedule');
-                            } catch (error) {
-                                console.error('Export failed:', error);
-                            }
-                        }}
-                        className={`
-                            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                            text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
-                            dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
-                            transition-all duration-200 cursor-pointer
-                            ${isSidebarCollapsed ? 'justify-center px-0' : ''}
-                        `}
-                        title={isSidebarCollapsed ? 'Export' : undefined}
-                        aria-label="Export schedule"
-                    >
-                        <ExportIcon className="w-5 h-5 flex-shrink-0" />
-                        {!isSidebarCollapsed && (
-                            <span className="truncate">Export</span>
-                        )}
-                    </button>
+                    {/* Export Button - only show when project is loaded */}
+                    {activeNavItem !== 'welcome' && (
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const exams = await getExams();
+                                    await exportCalendarToPDF(exams, 'exam-schedule');
+                                } catch (error) {
+                                    console.error('Export failed:', error);
+                                }
+                            }}
+                            className={`
+                                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                                text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                                dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                                transition-all duration-200 cursor-pointer
+                                ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                            `}
+                            title={isSidebarCollapsed ? 'Export' : undefined}
+                            aria-label="Export schedule"
+                        >
+                            <ExportIcon className="w-5 h-5 flex-shrink-0" />
+                            {!isSidebarCollapsed && (
+                                <span className="truncate">Export</span>
+                            )}
+                        </button>
+                    )}
 
                     {/* Help Button */}
                     <button
