@@ -1,5 +1,7 @@
 import { useNavigation, VIEW_CONFIG } from '../contexts/NavigationContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { exportCalendarToPDF } from '../services/pdfExportService';
+import { getExams } from '../services/dataService';
 
 /**
  * Layout Component - Base split-pane layout shell
@@ -225,7 +227,14 @@ export default function Layout({ children }) {
                 <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3 space-y-1">
                     {/* Export Button */}
                     <button
-                        onClick={() => {/* TODO: Export functionality */ }}
+                        onClick={async () => {
+                            try {
+                                const exams = await getExams();
+                                await exportCalendarToPDF(exams, 'exam-schedule');
+                            } catch (error) {
+                                console.error('Export failed:', error);
+                            }
+                        }}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                             text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1

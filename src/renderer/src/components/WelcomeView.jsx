@@ -17,9 +17,9 @@ export default function WelcomeView() {
 
     // Mock recent projects (will come from electron-store later)
     const recentProjects = [
-        { id: 1, name: 'Fall 2024 Finals', lastOpened: '2024-12-18' },
-        { id: 2, name: 'Midterm Exams', lastOpened: '2024-12-10' },
-        { id: 3, name: 'Spring 2024', lastOpened: '2024-06-15' },
+        { id: 1, name: 'Fall 2024 Finals', createdAt: '2024-12-18' },
+        { id: 2, name: 'Midterm Exams', createdAt: '2024-12-10' },
+        { id: 3, name: 'Spring 2024', createdAt: '2024-06-15' },
     ];
 
     return (
@@ -79,7 +79,7 @@ export default function WelcomeView() {
                                             {project.name}
                                         </p>
                                         <p className="text-sm text-nord-polar-4 dark:text-nord-snow-1/60 mt-1">
-                                            {formatDate(project.lastOpened)}
+                                            {formatDate(project.createdAt)}
                                         </p>
                                     </div>
                                     <ChevronRightIcon className="w-5 h-5 text-nord-polar-4/50 dark:text-nord-snow-1/30 
@@ -314,14 +314,7 @@ function NewScheduleDialog({ onClose }) {
 // Helper to format date
 function formatDate(dateString) {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Opened today';
-    if (diffDays === 1) return 'Opened yesterday';
-    if (diffDays < 7) return `Opened ${diffDays} days ago`;
-
-    return `Opened ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // Icons

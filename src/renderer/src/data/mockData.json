@@ -91,6 +91,27 @@
                 "STU018",
                 "STU020"
             ]
+        },
+        {
+            "course_code": "CHEM201",
+            "enrolled_students": [
+                "STU003",
+                "STU005",
+                "STU007",
+                "STU009",
+                "STU011"
+            ]
+        },
+        {
+            "course_code": "BIO101",
+            "enrolled_students": [
+                "STU002",
+                "STU004",
+                "STU006",
+                "STU012",
+                "STU014",
+                "STU016"
+            ]
         }
     ],
     "exams": [
@@ -131,6 +152,22 @@
             "course_code": "HIST110",
             "date": "2025-12-19",
             "time": "10:00",
+            "duration_minutes": 90,
+            "classroom_id": "A101"
+        },
+        {
+            "exam_id": "EX006",
+            "course_code": "CHEM201",
+            "date": "2025-12-22",
+            "time": "09:00",
+            "duration_minutes": 120,
+            "classroom_id": "C302"
+        },
+        {
+            "exam_id": "EX007",
+            "course_code": "BIO101",
+            "date": "2025-12-23",
+            "time": "14:00",
             "duration_minutes": 90,
             "classroom_id": "A101"
         }
