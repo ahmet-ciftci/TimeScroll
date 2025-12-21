@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getClassrooms } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
+import { Search, X, MapPin } from 'lucide-react';
 import CalendarGrid from './CalendarGrid';
 import Spinner from './Spinner';
 
@@ -102,7 +103,7 @@ export default function ClassroomView() {
                 <div className="relative w-72">
                     {/* Search Input */}
                     <div className="relative">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/50" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/50" />
                         <input
                             type="text"
                             value={selectedRoom ? selectedRoom.classroom_id : searchQuery}
@@ -120,7 +121,7 @@ export default function ClassroomView() {
                                 onClick={handleClearSelection}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-nord-polar-4 dark:text-nord-snow-1/50 hover:text-nord-polar-2 dark:hover:text-nord-snow-2"
                             >
-                                <XIcon className="w-4 h-4" />
+                                <X className="w-4 h-4" />
                             </button>
                         )}
                     </div>
@@ -155,7 +156,7 @@ export default function ClassroomView() {
                 {/* Selected Room Info */}
                 {selectedRoom && (
                     <div className="flex items-center gap-2 px-3 py-2 bg-nord-frost-3/10 dark:bg-nord-frost-3/20 rounded-lg border border-nord-frost-3/30">
-                        <BuildingIcon className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
+                        <MapPin className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
                         <span className="text-sm font-medium text-nord-frost-4 dark:text-nord-frost-2">
                             {selectedRoom.classroom_id}
                         </span>
@@ -171,7 +172,7 @@ export default function ClassroomView() {
                 <CalendarGrid filterByClassroom={selectedRoom.classroom_id} />
             ) : (
                 <div className="text-center py-16 text-nord-polar-4 dark:text-nord-snow-1/60">
-                    <BuildingIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Select a classroom to view its exam schedule</p>
                 </div>
             )}
@@ -184,31 +185,5 @@ export default function ClassroomView() {
                 />
             )}
         </div>
-    );
-}
-
-// Icons
-function SearchIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-        </svg>
-    );
-}
-
-function XIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-    );
-}
-
-function BuildingIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-        </svg>
     );
 }

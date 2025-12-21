@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getExams, getCourses } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
+import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
 import Spinner from './Spinner';
 
 /**
@@ -172,7 +173,7 @@ export default function CalendarGrid({
                                    text-nord-polar-3 dark:text-nord-snow-1 transition-colors"
                         aria-label="Previous week"
                     >
-                        <ChevronLeftIcon className="w-5 h-5" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
                         onClick={goToNextWeek}
@@ -180,7 +181,7 @@ export default function CalendarGrid({
                                    text-nord-polar-3 dark:text-nord-snow-1 transition-colors"
                         aria-label="Next week"
                     >
-                        <ChevronRightIcon className="w-5 h-5" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
                     <h3 className="text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 ml-2">
                         {formatWeekRange(currentMonday)}
@@ -263,11 +264,11 @@ export default function CalendarGrid({
                                                         </div>
                                                         <div className="flex items-center gap-1.5 mt-1 text-xs text-white/80 dark:text-nord-snow-1/80">
                                                             <span className="flex items-center gap-0.5">
-                                                                <RoomIcon className="w-3 h-3 flex-shrink-0" />
+                                                                <MapPin className="w-3 h-3 flex-shrink-0" />
                                                                 {exam.classroom_id}
                                                             </span>
                                                             <span className="flex items-center gap-0.5">
-                                                                <ClockIcon className="w-3 h-3 flex-shrink-0" />
+                                                                <Clock className="w-3 h-3 flex-shrink-0" />
                                                                 {exam.duration_minutes}m
                                                             </span>
                                                         </div>
@@ -285,39 +286,5 @@ export default function CalendarGrid({
                 </table>
             </div>
         </div>
-    );
-}
-
-// Icons
-function ChevronLeftIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-        </svg>
-    );
-}
-
-function ChevronRightIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18l6-6-6-6" />
-        </svg>
-    );
-}
-
-function RoomIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-        </svg>
-    );
-}
-
-function ClockIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" />
-        </svg>
     );
 }

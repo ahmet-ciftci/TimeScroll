@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getCourses, getExams } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
+import { Search, X, BookOpen, Users, User, Calendar, ChevronRight } from 'lucide-react';
 import Spinner from './Spinner';
 
 /**
@@ -143,7 +144,7 @@ export default function CourseView() {
                     <div className="relative w-72">
                         {/* Search Input */}
                         <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/50" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/50" />
                             <input
                                 type="text"
                                 value={selectedCourse ? selectedCourse.course_code : searchQuery}
@@ -161,7 +162,7 @@ export default function CourseView() {
                                     onClick={handleClearSelection}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-nord-polar-4 dark:text-nord-snow-1/50 hover:text-nord-polar-2 dark:hover:text-nord-snow-2"
                                 >
-                                    <XIcon className="w-4 h-4" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             )}
                         </div>
@@ -207,7 +208,7 @@ export default function CourseView() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
-                                <UsersIcon className="w-4 h-4" />
+                                <Users className="w-4 h-4" />
                                 <span>{enrolledStudentIds.length} students</span>
                             </div>
                         </div>
@@ -217,7 +218,7 @@ export default function CourseView() {
                     {exam && (
                         <div className="card border-l-4 border-nord-frost-3">
                             <h4 className="font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-3 flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
+                                <Calendar className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
                                 Exam Schedule
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -252,7 +253,7 @@ export default function CourseView() {
                     {/* Enrolled Students List */}
                     <div className="card">
                         <h4 className="font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-4 flex items-center gap-2">
-                            <UsersIcon className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
+                            <Users className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
                             Enrolled Students
                         </h4>
                         {enrolledStudentIds.length === 0 ? (
@@ -273,13 +274,13 @@ export default function CourseView() {
                                             <div className="w-8 h-8 rounded-full bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
                                                             flex items-center justify-center text-xs font-medium 
                                                             text-nord-frost-4 dark:text-nord-frost-2">
-                                                <UserIcon className="w-4 h-4" />
+                                                <User className="w-4 h-4" />
                                             </div>
                                             <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2">
                                                 {studentId}
                                             </p>
                                         </div>
-                                        <ChevronRightIcon className="w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/40 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2" />
+                                        <ChevronRight className="w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/40 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2" />
                                     </button>
                                 ))}
                             </div>
@@ -289,7 +290,7 @@ export default function CourseView() {
             ) : (
                 /* Prompt to select course */
                 <div className="text-center py-16 text-nord-polar-4 dark:text-nord-snow-1/60">
-                    <BookIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Select a course to view its details and enrolled students</p>
                 </div>
             )}
@@ -314,70 +315,4 @@ function formatDate(dateString) {
         day: 'numeric',
         year: 'numeric'
     });
-}
-
-// Icons
-function SearchIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-        </svg>
-    );
-}
-
-function XIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-    );
-}
-
-function BookIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-        </svg>
-    );
-}
-
-function UsersIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-    );
-}
-
-function UserIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-        </svg>
-    );
-}
-
-function CalendarIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-    );
-}
-
-function ChevronRightIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18l6-6-6-6" />
-        </svg>
-    );
 }

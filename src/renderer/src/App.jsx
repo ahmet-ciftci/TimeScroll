@@ -1,4 +1,4 @@
-import { NavigationProvider, useNavigation, VIEW_CONFIG } from './contexts/NavigationContext';
+import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import CalendarGrid from './components/CalendarGrid';
@@ -6,7 +6,6 @@ import ClassroomViewComponent from './components/ClassroomView';
 import StudentViewComponent from './components/StudentView';
 import CourseViewComponent from './components/CourseView';
 import WelcomeViewComponent from './components/WelcomeView';
-import Spinner from './components/Spinner';
 
 /**
  * App Component - Main application entry point
