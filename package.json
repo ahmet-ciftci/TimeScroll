@@ -21,7 +21,8 @@
         "build:unpack": "npm run build && electron-builder --dir",
         "build:win": "npm run build && electron-builder --win",
         "build:mac": "npm run build && electron-builder --mac",
-        "build:linux": "npm run build && electron-builder --linux"
+        "build:linux": "npm run build && electron-builder --linux",
+        "dist": "electron-builder"
     },
     "dependencies": {
         "@electron-toolkit/preload": "^3.0.2",
@@ -38,6 +39,7 @@
         "autoprefixer": "^10.4.22",
         "electron": "^39.2.6",
         "electron-builder": "^26.0.12",
+        "electron-rebuild": "^3.2.9",
         "electron-vite": "^5.0.0",
         "eslint": "^9.39.1",
         "eslint-plugin-react": "^7.37.5",
