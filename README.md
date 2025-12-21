@@ -1,110 +1,170 @@
 # TimeScroll
 
-A standalone desktop application for Windows designed to automate the creation of examination schedules for educational institutions.
+TimeScroll is a Windows desktop application designed to automate the creation of examination schedules for educational institutions. Built with Electron and React, it provides an elegant solution for managing complex scheduling requirements.
 
-## Architecture
+The application uses intelligent algorithms to:
+- **Allocate classrooms** efficiently using bin-packing algorithms
+- **Detect conflicts** for students enrolled in multiple courses
+- **Generate optimized schedules** that respect time constraints and room capacities
 
-TimeScroll follows a **Layered MVC Architecture** adapted for Electron:
+Whether you're scheduling exams for a single department or an entire university, TimeScroll streamlines the process with a modern, intuitive interface.
 
-```
-┌─────────────────────────────────────────────┐
-│           Presentation Layer (View)          │
-│         React.js - Renderer Process          │
-│           src/renderer/                      │
-├─────────────────────────────────────────────┤
-│         Application Logic (Controller)       │
-│         Node.js - Main Process               │
-│           src/main/                          │
-├─────────────────────────────────────────────┤
-│           Data Access Layer (Model)          │
-│           SQLite via better-sqlite3          │
-│           src/data/                          │
-└─────────────────────────────────────────────┘
-```
+---
 
-## Directory Structure
+## Features
 
-```
-timescroll/
-├── src/
-│   ├── main/              # Electron Main Process
-│   │   ├── controllers/   # Business logic controllers
-│   │   └── index.js       # Entry point
-│   ├── preload/           # Secure IPC bridge
-│   │   └── index.js
-│   ├── renderer/          # React Renderer Process
-│   │   ├── src/
-│   │   │   ├── assets/    # CSS and static assets
-│   │   │   ├── components/# Reusable UI components
-│   │   │   ├── views/     # Page-level views
-│   │   │   ├── App.jsx    # Root component
-│   │   │   └── main.jsx   # React entry
-│   │   └── index.html     # HTML shell
-│   └── data/              # Data Access Layer
-│       └── models/        # Database models & schemas
-├── docs/                  # Developer documentation
-├── build/                 # Build resources (icons, etc.)
-├── resources/             # App resources
-└── package.json
-```
+### Core Functionality
+- **Smart Schedule Generation** — Automatically generates exam schedules based on constraints
+- **Classroom Management** — Track room capacities and availability
+- **Student & Course Tracking** — Manage enrollments and detect scheduling conflicts
+- **Visual Calendar View** — Interactive calendar grid showing all scheduled exams
+- **Dark/Light Theme** — Beautiful Nord-themed interface with theme switching
 
-## Tech Stack
+### Data Management
+- **CSV Import** — Import classroom and enrollment data from CSV files
+- **Profile-Based Projects** — Create and manage multiple schedule projects
+- **JSON/CSV Export** — Export generated schedules to JSON or CSV format
 
-- **Framework:** Electron 39.x
-- **Build Tool:** electron-vite
-- **Frontend:** React 19.x with Tailwind CSS
-- **Database:** SQLite (via better-sqlite3)
-- **Language:** JavaScript/Node.js
+### Technical Highlights
+- **Fast & Responsive** — Built with React 19 and Framer Motion animations
+- **Local Storage** — SQLite database for reliable local data storage
+- **Windows Native** — Optimized for Windows desktop
 
-## Getting Started
+---
 
-### Prerequisites
+## Installation
 
-- Node.js (v18 or higher)
-- npm
+### Option 1: Download from Releases
 
-### Installation
+Download the latest release:
+
+| Platform | Download |
+|----------|----------|
+| Windows  | `timescroll-x.x.x-setup.exe` |
+
+1. Download the installer from the releases page
+2. Run the installer and follow the on-screen instructions
+3. Launch TimeScroll from your Start menu or desktop shortcut
+
+### Option 2: Run from Source
+
+#### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
+
+#### Steps
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd timescroll
+git clone https://github.com/ahmet-ciftci/TimeScroll.git
+cd TimeScroll
 
 # Install dependencies
 npm install
 
-# Start in development mode
+# Run in development mode
 npm run dev
 ```
 
-### Available Scripts
+## Usage
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start in development mode with hot reload |
-| `npm start` | Preview production build |
-| `npm run build` | Build for all platforms |
-| `npm run build:win` | Build for Windows |
-| `npm run build:mac` | Build for macOS |
-| `npm run build:linux` | Build for Linux |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
+### Getting Started
 
-## Documentation
+When you first launch TimeScroll, you'll see the **Welcome screen** where you can create a new schedule or open a recent project.
 
-- [Frontend Guide](docs/FRONTEND_GUIDE.md) - UI development guidelines
-- [Backend Guide](docs/BACKEND_GUIDE.md) - Controller and business logic
-- [Database Guide](docs/DATABASE_GUIDE.md) - Data layer implementation
+![Welcome Screen](docs/screenshots/Welcome%20Screen.png)
 
-## Code Style
+---
 
-This project uses:
-- **ESLint** for code quality
-- **Prettier** for formatting
-- **EditorConfig** for cross-IDE consistency
+### Creating a New Schedule
 
-Run `npm run format` before committing to ensure consistent formatting.
+1. Click **"Create New Schedule"** on the welcome screen
+2. Fill in the schedule details in the dialog:
 
-## License
+![New Schedule Dialog](docs/screenshots/New%20Schedule%20Dialog.png)
 
-MIT
+**Required Inputs:**
+- **Schedule Name** — A descriptive name for your schedule
+- **Classroom Data (CSV)** — File with columns: `Room Name, Capacity`
+- **Enrollment Data (CSV)** — File with columns: `Course Code, Student ID`
+- **Exam Duration** — Default exam length in minutes
+- **Schedule Duration** — Minimum and maximum days for the exam period
+- **Time Range** — Daily start and end times (24-hour format, e.g., `09:00` to `18:00`)
+
+3. Click **"Create Schedule"** to generate your exam schedule
+
+---
+
+### Dashboard View
+
+After creating or opening a schedule, you'll see the **Dashboard** with an interactive calendar grid showing all scheduled exams.
+
+![Dashboard Calendar View](docs/screenshots/Dashboard%20Calendar%20View.png)
+
+**Calendar Features:**
+- Click on exam blocks to view details
+
+---
+
+### Managing Classrooms
+
+Navigate to the **Classroom** section from the sidebar to manage your rooms.
+
+![Classroom Management View](docs/screenshots/Classroom%20Management%20View.png)
+
+**Actions:**
+- View all classrooms and their capacities
+
+---
+
+### Managing Students
+
+The **Student** section allows you to view and manage student data.
+
+![Student Management View](docs/screenshots/Student%20Management%20View.png)
+
+**View Information:**
+- Student IDs
+- Course enrollments
+
+---
+
+### Managing Courses
+
+The **Course** section displays all courses included in the schedule.
+
+![Course Management View](docs/screenshots/Course%20Management%20View.png)
+
+**Course Details:**
+- Course codes
+- Number of enrolled students
+- Assigned exam date and time
+- Room allocation
+
+---
+
+### Sidebar Navigation & Theme Toggle
+
+The sidebar provides quick access to all sections of the application.
+
+![Sidebar with Theme Toggle](docs/screenshots/Sidebar%20with%20Theme%20Toggle.png)
+
+**Navigation Items:**
+- Dashboard — Calendar overview
+- Classroom — Room management
+- Student — Student data
+- Course — Course management
+- Light/Dark Mode — Toggle between light and dark themes
+- Export Schedule — Export the schedule to a JSON or CSV file
+---
+
+## Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| [Electron](https://www.electronjs.org/) | Desktop application framework |
+| [React 19](https://reactjs.org/) | UI component library |
+| [Tailwind CSS](https://tailwindcss.com/) | Utility-first styling |
+| [Framer Motion](https://www.framer.com/motion/) | Animations |
+| [SQLite](https://www.sqlite.org/) | Local database |
+| [Vite](https://vitejs.dev/) | Build tool |

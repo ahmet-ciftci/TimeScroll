@@ -58,7 +58,7 @@ export default function WelcomeView() {
     // Handle deleting a project
     const handleDeleteProject = async (e, project) => {
         e.stopPropagation(); // Don't trigger the card click
-        
+
         if (confirm(`Are you sure you want to delete "${project.name}"? This cannot be undone.`)) {
             try {
                 await window.api.deleteProfile(project.profileName);
@@ -176,9 +176,8 @@ export default function WelcomeView() {
                                                 {formatDate(project.createdAt)}
                                             </p>
                                         </div>
-                                        <div>
+                                        <div className="group-hover:opacity-0 transition-opacity duration-200">
                                             <ChevronRight className="w-5 h-5 text-nord-polar-4/50 dark:text-nord-snow-1/30 
-                                                                          group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
                                                                           flex-shrink-0 mt-1" />
                                         </div>
                                     </div>
@@ -254,24 +253,24 @@ function NewScheduleDialog({ onClose }) {
     const handleCreate = async () => {
         setIsLoading(true);
         setError(null);
-        
+
         try {
             // Generate the profile name first
-            const profileName = scheduleName && scheduleName.trim() 
-                ? scheduleName.trim() 
+            const profileName = scheduleName && scheduleName.trim()
+                ? scheduleName.trim()
                 : `Schedule_${new Date().toISOString().split('T')[0]}_${Date.now()}`;
-            
+
             // Import data from CSV files (scoped to this profile)
             const importResult = await window.api.importData({
                 profileName,
                 classroomsPath: classroomFilePath,
                 enrollmentsPath: enrollmentFilePath
             });
-            
+
             if (!importResult.success) {
                 throw new Error(importResult.error || 'Failed to import data');
             }
-            
+
             // Generate the schedule with settings
             const scheduleResult = await window.api.generateSchedule({
                 scheduleName: profileName,
@@ -283,17 +282,17 @@ function NewScheduleDialog({ onClose }) {
                     day_end_time: endTime || '18:00'
                 }
             });
-            
+
             if (!scheduleResult.success) {
                 throw new Error(scheduleResult.error || 'Failed to generate schedule');
             }
-            
+
             console.log('Schedule created successfully:', scheduleResult);
-            
+
             // Close dialog and open the new schedule
             onClose();
             openSchedule(scheduleResult.profileName);
-            
+
         } catch (err) {
             console.error('Schedule creation failed:', err);
             setError(err.message);
@@ -567,7 +566,7 @@ function NewScheduleDialog({ onClose }) {
                             {error}
                         </div>
                     )}
-                    
+
                     <div className="flex justify-end gap-3">
                         <motion.button
                             whileHover={{ scale: 1.02 }}

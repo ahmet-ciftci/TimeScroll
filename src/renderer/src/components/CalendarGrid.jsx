@@ -34,21 +34,21 @@ function generateTimeSlots(startTime, endTime, durationMinutes) {
     const slots = [];
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
-    
+
     let currentTotalMinutes = startHour * 60 + startMin;
     const endTotalMinutes = endHour * 60 + endMin;
-    
+
     // Only add slot if the full exam duration fits before end time
     while (currentTotalMinutes + durationMinutes <= endTotalMinutes) {
         const hours = Math.floor(currentTotalMinutes / 60);
         const mins = currentTotalMinutes % 60;
         const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
         slots.push(timeStr);
-        
+
         // Advance by exam duration
         currentTotalMinutes += durationMinutes;
     }
-    
+
     return slots.length > 0 ? slots : DEFAULT_TIME_SLOTS;
 }
 
@@ -414,10 +414,11 @@ export default function CalendarGrid({
                                                                         whileTap={{ scale: 0.95 }}
                                                                         className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5
                                                                                    flex items-center justify-center
-                                                                                   bg-nord-aurora-yellow text-nord-polar-1
+                                                                                   bg-nord-frost-4 dark:bg-nord-snow-2 
+                                                                                   text-white dark:text-nord-polar-1
                                                                                    text-xs font-bold rounded-full
                                                                                    shadow-md border-2 border-white dark:border-nord-polar-2
-                                                                                   cursor-pointer hover:bg-nord-aurora-orange
+                                                                                   cursor-pointer hover:bg-nord-frost-3 dark:hover:bg-nord-snow-1
                                                                                    transition-colors z-20"
                                                                     >
                                                                         +{additionalCount}
@@ -472,7 +473,7 @@ export default function CalendarGrid({
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
-                        
+
                         {/* Exam list */}
                         <div className="space-y-2 max-h-[300px] overflow-y-auto">
                             {popoverData.exams.map((exam, index) => (
@@ -505,7 +506,7 @@ export default function CalendarGrid({
                                 </motion.button>
                             ))}
                         </div>
-                        
+
                         {/* Arrow pointer */}
                         <div className="absolute -top-2 left-1/2 -translate-x-1/2 
                                         w-0 h-0 border-l-8 border-r-8 border-b-8 
