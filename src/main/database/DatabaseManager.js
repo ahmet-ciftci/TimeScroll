@@ -17,6 +17,34 @@ class DBManager {
 
         DBManager.instance = this;
     }
+
+    connect() {
+        try {
+            const dataDir = path.dirname(this.dbPath);
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
+
+            this.db = new Database(this.dbPath);
+            console.log(`[DBManager] Connected to SQLite: ${this.dbPath}`);
+
+            this.initSchema();
+        } catch (error) {
+            console.error("[DBManager] Connection failed:", error);
+            throw error;
+        }
+    }
+
+    initSchema() {
+        const schemaPath = path.join(__dirname, 'schema.sql');
+        if (fs.existsSync(schemaPath)) {
+            const schema = fs.readFileSync(schemaPath, 'utf8');
+            this.db.exec(schema);
+            console.log("[DBManager] Schema initialized/verified.");
+        } else {
+            console.error("[DBManager] schema.sql not found!");
+        }
+    }
 }
 
 module.exports = new DBManager();
