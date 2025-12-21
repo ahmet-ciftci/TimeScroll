@@ -45,6 +45,66 @@ class DBManager {
             console.error("[DBManager] schema.sql not found!");
         }
     }
+
+    saveClassrooms(classrooms) {
+        const insert = this.db.prepare(`
+            INSERT OR REPLACE INTO classrooms (room_name, capacity) 
+            VALUES (@roomName, @capacity)
+        `);
+
+        const insertMany = this.db.transaction((rooms) => {
+            for (const room of rooms) {
+                insert.run({
+                    roomName: room.roomName,
+                    capacity: room.capacity
+                });
+            }
+        });
+
+        insertMany(classrooms);
+        console.log(`[DBManager] Saved ${classrooms.length} classrooms to DB.`);
+    }
+
+    saveEnrollmentData({ students, courses }) {
+        console.log("[DBManager] Saving bulk enrollment data...");
+
+        const insertCourse = this.db.prepare(`
+            INSERT OR REPLACE INTO courses (course_code, total_students)
+            VALUES (@courseCode, @studentCount)
+        `);
+
+        const insertStudent = this.db.prepare(`
+            INSERT OR REPLACE INTO students (student_id)
+            VALUES (@studentId)
+        `);
+
+        const insertEnrollment = this.db.prepare(`
+            INSERT OR IGNORE INTO enrollments (student_id, course_code)
+            VALUES (?, ?)
+        `);
+
+        const transaction = this.db.transaction(() => {
+            for (const course of courses) {
+                insertCourse.run({
+                    courseCode: course.courseCode,
+                    studentCount: course.studentCount
+                });
+            }
+
+            for (const student of students) {
+                insertStudent.run({
+                    studentId: student.studentId
+                });
+                
+                for (const courseCode of student.enrolledCourses) {
+                    insertEnrollment.run(student.studentId, courseCode);
+                }
+            }
+        });
+
+        transaction();
+        console.log(`[DBManager] Saved ${courses.length} courses and ${students.length} students to DB.`);
+    }
 }
 
 module.exports = new DBManager();
