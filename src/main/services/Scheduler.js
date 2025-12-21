@@ -75,23 +75,75 @@ class Scheduler {
         return false;
     }
 
+
     checkConflict(course, time, room, date, allStudents) {
-        //TODO: @emre
-        return true; 
+        
+        if (room.capacity < course.studentCount) {
+            return false;
+        }
+
+        const roomTaken = this.assignedSlots.some(slot =>
+            slot.roomName === room.roomName &&
+            slot.date === date &&
+            slot.startTime === time
+        );
+
+        if (roomTaken) return false;
+
+        const enrolledStudents = allStudents.filter(s => s.enrolledCourses.includes(course.courseCode));
+
+        for (const student of enrolledStudents) {
+            const hasConcurrency = this.assignedSlots.some(slot =>
+                slot.date === date &&
+                slot.startTime === time &&
+                allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+            );
+
+            if (hasConcurrency) return false;
+
+            if (!this.checkDailyLimit(student, date, allStudents)) {
+                return false;
+            }
+
+            if (!this.checkConsecutiveGap(student, time, date, allStudents)) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    // requirement 7
     checkDailyLimit(student, date, allStudents) {
-        // TODO: @emre
-        return true;
-    }
+        const studentDailyExams = this.assignedSlots.filter(slot =>
+            slot.date === date &&
+            allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+    );
 
-    // requirement 6
-    checkConsecutiveGap(student, newTime, date, allStudents) {
-        // TODO: @emre
-        return true;
+    if (studentDailyExams.length >= this.maxExamsPerDay) {
+        return false;
     }
+    return true;
+}
 
+checkConsecutiveGap(student, newTime, date, allStudents) {
+    const studentDailyExams = this.assignedSlots.filter(slot =>
+        slot.date === date &&
+        allStudents.find(s => s.studentId === student.studentId)?.enrolledCourses.includes(slot.courseCode)
+    );
+
+    const newStartMinutes = this.parseTime(newTime);
+    const duration = this.globalSettings.examDuration;
+
+    for (const exam of studentDailyExams) {
+        const existingStartMinutes = this.parseTime(exam.startTime);
+        const diff = Math.abs(newStartMinutes - existingStartMinutes);
+
+        if (diff <= duration) {
+            return false;
+        }
+    }
+    return true;
+}
+    
     generateTimeSlots() {
         const slots = [];
         let currentMin = this.parseTime(this.globalSettings.dayStartTime);
