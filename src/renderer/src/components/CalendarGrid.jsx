@@ -1,8 +1,17 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getExams, getCourses } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
 import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
 import Spinner from './Spinner';
+import {
+    buttonHover,
+    buttonTap,
+    staggerContainer,
+    staggerItem,
+    examCardVariants,
+    smoothSpring,
+} from '../lib/animations';
 
 /**
  * CalendarGrid Component
@@ -163,40 +172,58 @@ export default function CalendarGrid({
     }
 
     return (
-        <div className="space-y-4">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+        >
             {/* Week Navigation Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <button
+                    <motion.button
                         onClick={goToPrevWeek}
+                        whileHover={buttonHover}
+                        whileTap={buttonTap}
                         className="p-2 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
-                                   text-nord-polar-3 dark:text-nord-snow-1 transition-colors"
+                                   text-nord-polar-3 dark:text-nord-snow-1"
                         aria-label="Previous week"
                     >
                         <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         onClick={goToNextWeek}
+                        whileHover={buttonHover}
+                        whileTap={buttonTap}
                         className="p-2 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
-                                   text-nord-polar-3 dark:text-nord-snow-1 transition-colors"
+                                   text-nord-polar-3 dark:text-nord-snow-1"
                         aria-label="Next week"
                     >
                         <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <h3 className="text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 ml-2">
-                        {formatWeekRange(currentMonday)}
-                    </h3>
+                    </motion.button>
+                    <AnimatePresence mode="wait">
+                        <motion.h3
+                            key={currentMonday.toISOString()}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                            className="text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 ml-2"
+                        >
+                            {formatWeekRange(currentMonday)}
+                        </motion.h3>
+                    </AnimatePresence>
                 </div>
-                <button
+                <motion.button
                     onClick={goToToday}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     className="px-3 py-1.5 text-sm font-medium rounded-lg
                                bg-nord-frost-3/10 text-nord-frost-4 
                                hover:bg-nord-frost-3/20 dark:bg-nord-frost-3/20 
-                               dark:text-nord-frost-2 dark:hover:bg-nord-frost-3/30
-                               transition-colors"
+                               dark:text-nord-frost-2 dark:hover:bg-nord-frost-3/30"
                 >
                     Today
-                </button>
+                </motion.button>
             </div>
 
             {/* Calendar Grid */}
@@ -250,14 +277,23 @@ export default function CalendarGrid({
                                             {/* Container for exam card - relative positioning base */}
                                             <div className="h-[72px]">
                                                 {exam ? (
-                                                    <button
+                                                    <motion.button
                                                         onClick={() => handleExamClick(exam)}
                                                         style={{ height: `${examHeight}px` }}
+                                                        initial={{ opacity: 0, scale: 0.9 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        whileHover={{
+                                                            scale: 1.02,
+                                                            y: -2,
+                                                            boxShadow: '0 8px 25px -5px rgba(136, 192, 208, 0.4)'
+                                                        }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        transition={smoothSpring}
                                                         className="absolute left-1 right-1 text-left p-2 rounded-lg 
                                                                    bg-nord-frost-3 dark:bg-nord-frost-4
                                                                    hover:bg-nord-frost-4 dark:hover:bg-nord-frost-3
                                                                    border border-nord-frost-4/30 dark:border-nord-frost-3
-                                                                   transition-colors cursor-pointer group overflow-hidden z-10 shadow-sm"
+                                                                   cursor-pointer group overflow-hidden z-10 shadow-sm"
                                                     >
                                                         <div className="font-medium text-sm text-white dark:text-nord-snow-2 truncate leading-tight">
                                                             {exam.course_code}
@@ -272,7 +308,7 @@ export default function CalendarGrid({
                                                                 {exam.duration_minutes}m
                                                             </span>
                                                         </div>
-                                                    </button>
+                                                    </motion.button>
                                                 ) : (
                                                     <div className="w-full h-full rounded-lg border border-dashed border-nord-snow-1/50 dark:border-nord-polar-3/30" />
                                                 )}
@@ -285,6 +321,6 @@ export default function CalendarGrid({
                     </tbody>
                 </table>
             </div>
-        </div>
+        </motion.div>
     );
 }

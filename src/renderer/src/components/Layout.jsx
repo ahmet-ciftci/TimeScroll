@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigation, VIEW_CONFIG } from '../contexts/NavigationContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { exportCalendarToPDF } from '../services/pdfExportService';
 import { getExams } from '../services/dataService';
+import {
+    sidebarVariants,
+    sidebarTextVariants,
+    staggerContainer,
+    staggerItem,
+    buttonHover,
+    buttonTap,
+    breadcrumbVariants,
+    smoothSpring,
+} from '../lib/animations';
 import {
     Home,
     LayoutGrid,
@@ -150,46 +161,58 @@ export default function Layout({ children }) {
     return (
         <div className="flex h-screen bg-nord-snow-3 dark:bg-nord-polar-1">
             {/* Sidebar */}
-            <aside
-                className={`
-                    flex flex-col border-r border-nord-snow-1 dark:border-nord-polar-3
-                    bg-white dark:bg-nord-polar-2
-                    transition-all duration-300 ease-in-out
-                    ${isSidebarCollapsed ? 'w-16' : 'w-56'}
-                `}
+            <motion.aside
+                variants={sidebarVariants}
+                animate={isSidebarCollapsed ? 'collapsed' : 'expanded'}
+                className="flex flex-col border-r border-nord-snow-1 dark:border-nord-polar-3
+                    bg-white dark:bg-nord-polar-2 overflow-hidden"
             >
                 {/* Logo/Brand Area */}
                 <div className="flex items-center justify-between h-14 px-3 border-b border-nord-snow-1 dark:border-nord-polar-3">
-                    {!isSidebarCollapsed && (
-                        <h1 className="font-heading text-lg font-semibold text-nord-frost-4 dark:text-nord-frost-2 truncate">
-                            TimeScroll
-                        </h1>
-                    )}
-                    <button
+                    <AnimatePresence mode="wait">
+                        {!isSidebarCollapsed && (
+                            <motion.h1
+                                key="logo"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="font-heading text-lg font-semibold text-nord-frost-4 dark:text-nord-frost-2 truncate"
+                            >
+                                TimeScroll
+                            </motion.h1>
+                        )}
+                    </AnimatePresence>
+                    <motion.button
                         onClick={toggleSidebar}
+                        whileHover={buttonHover}
+                        whileTap={buttonTap}
                         className="p-1.5 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
-                                   text-nord-polar-4 dark:text-nord-snow-1 transition-colors"
+                                   text-nord-polar-4 dark:text-nord-snow-1"
                         aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                     >
-                        {isSidebarCollapsed ? (
-                            <ChevronRight className="w-5 h-5" />
-                        ) : (
+                        <motion.div
+                            animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
+                            transition={smoothSpring}
+                        >
                             <ChevronLeft className="w-5 h-5" />
-                        )}
-                    </button>
+                        </motion.div>
+                    </motion.button>
                 </div>
 
                 {/* Navigation Items */}
                 <nav className="flex-1 p-2 space-y-1">
                     {NAV_ITEMS
                         .filter(item => !item.requiresProject || activeNavItem !== 'welcome')
-                        .map(item => {
+                        .map((item) => {
                             const Icon = item.icon;
                             const isActive = activeNavItem === item.id;
 
                             return (
-                                <button
+                                <motion.button
                                     key={item.id}
+                                    whileHover={{ scale: 1.02, x: 4 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => navigateToRoot(item.id)}
                                     className={`
                                     nav-item w-full
@@ -199,104 +222,173 @@ export default function Layout({ children }) {
                                     title={isSidebarCollapsed ? item.label : undefined}
                                 >
                                     <Icon className="w-5 h-5 flex-shrink-0" />
-                                    {!isSidebarCollapsed && (
-                                        <span className="truncate">{item.label}</span>
-                                    )}
-                                </button>
+                                    <AnimatePresence mode="wait">
+                                        {!isSidebarCollapsed && (
+                                            <motion.span
+                                                key={item.id + '-label'}
+                                                initial={{ opacity: 0, width: 0 }}
+                                                animate={{ opacity: 1, width: 'auto' }}
+                                                exit={{ opacity: 0, width: 0 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="truncate"
+                                            >
+                                                {item.label}
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.button>
                             );
                         })}
                 </nav>
 
+
                 {/* Footer with theme toggle, export, and help */}
                 <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3 space-y-1">
                     {/* Export Button - only show when project is loaded */}
-                    {activeNavItem !== 'welcome' && (
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const exams = await getExams();
-                                    await exportCalendarToPDF(exams, 'exam-schedule');
-                                } catch (error) {
-                                    console.error('Export failed:', error);
-                                }
-                            }}
-                            className={`
-                                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                                text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
-                                dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
-                                transition-all duration-200 cursor-pointer
-                                ${isSidebarCollapsed ? 'justify-center px-0' : ''}
-                            `}
-                            title={isSidebarCollapsed ? 'Export' : undefined}
-                            aria-label="Export schedule"
-                        >
-                            <Upload className="w-5 h-5 flex-shrink-0" />
-                            {!isSidebarCollapsed && (
-                                <span className="truncate">Export</span>
-                            )}
-                        </button>
-                    )}
+                    <AnimatePresence>
+                        {activeNavItem !== 'welcome' && (
+                            <motion.button
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                whileHover={buttonHover}
+                                whileTap={buttonTap}
+                                onClick={async () => {
+                                    try {
+                                        const exams = await getExams();
+                                        await exportCalendarToPDF(exams, 'exam-schedule');
+                                    } catch (error) {
+                                        console.error('Export failed:', error);
+                                    }
+                                }}
+                                className={`
+                                    w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                                    text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                                    dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                                    cursor-pointer
+                                    ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                                `}
+                                title={isSidebarCollapsed ? 'Export' : undefined}
+                                aria-label="Export schedule"
+                            >
+                                <Upload className="w-5 h-5 flex-shrink-0" />
+                                <AnimatePresence mode="wait">
+                                    {!isSidebarCollapsed && (
+                                        <motion.span
+                                            initial={{ opacity: 0, width: 0 }}
+                                            animate={{ opacity: 1, width: 'auto' }}
+                                            exit={{ opacity: 0, width: 0 }}
+                                            className="truncate"
+                                        >
+                                            Export
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
 
                     {/* Help Button */}
-                    <button
+                    <motion.button
+                        whileHover={buttonHover}
+                        whileTap={buttonTap}
                         onClick={() => {/* TODO: Help functionality */ }}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                             text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
                             dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
-                            transition-all duration-200 cursor-pointer
+                            cursor-pointer
                             ${isSidebarCollapsed ? 'justify-center px-0' : ''}
                         `}
                         title={isSidebarCollapsed ? 'Help' : undefined}
                         aria-label="Help"
                     >
                         <HelpCircle className="w-5 h-5 flex-shrink-0" />
-                        {!isSidebarCollapsed && (
-                            <span className="truncate">Help</span>
-                        )}
-                    </button>
+                        <AnimatePresence mode="wait">
+                            {!isSidebarCollapsed && (
+                                <motion.span
+                                    initial={{ opacity: 0, width: 0 }}
+                                    animate={{ opacity: 1, width: 'auto' }}
+                                    exit={{ opacity: 0, width: 0 }}
+                                    className="truncate"
+                                >
+                                    Help
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </motion.button>
 
                     {/* Theme Toggle */}
-                    <button
+                    <motion.button
+                        whileHover={buttonHover}
+                        whileTap={buttonTap}
                         onClick={toggleTheme}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                             text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
                             dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
-                            transition-all duration-200 cursor-pointer
+                            cursor-pointer
                             ${isSidebarCollapsed ? 'justify-center px-0' : ''}
                         `}
                         title={isSidebarCollapsed ? (isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode') : undefined}
                         aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                     >
-                        {isDarkMode ? (
-                            <Sun className="w-5 h-5 flex-shrink-0" />
-                        ) : (
-                            <Moon className="w-5 h-5 flex-shrink-0" />
-                        )}
-                        {!isSidebarCollapsed && (
-                            <span className="truncate">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                        )}
-                    </button>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={isDarkMode ? 'sun' : 'moon'}
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.5, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                            >
+                                {isDarkMode ? (
+                                    <Sun className="w-5 h-5 flex-shrink-0" />
+                                ) : (
+                                    <Moon className="w-5 h-5 flex-shrink-0" />
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                        <AnimatePresence mode="wait">
+                            {!isSidebarCollapsed && (
+                                <motion.span
+                                    key={isDarkMode ? 'light-text' : 'dark-text'}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="truncate"
+                                >
+                                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </motion.button>
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Header with back button, project name, and breadcrumbs */}
                 <header className="flex items-center gap-4 h-14 px-4 border-b border-nord-snow-1 dark:border-nord-polar-3 bg-white dark:bg-nord-polar-2">
-                    <button
+                    <motion.button
                         onClick={canGoBack ? goBack : undefined}
                         disabled={!canGoBack}
-                        className={`flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg transition-colors flex-shrink-0
+                        whileHover={canGoBack ? { scale: 1.02, x: -2 } : {}}
+                        whileTap={canGoBack ? { scale: 0.98 } : {}}
+                        className={`flex items-center gap-2 px-2 py-1.5 -ml-2 rounded-lg flex-shrink-0
                             ${canGoBack
                                 ? 'text-nord-polar-3 dark:text-nord-snow-1 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 cursor-pointer'
                                 : 'text-nord-polar-4/40 dark:text-nord-snow-1/30 cursor-not-allowed'
                             }`}
                     >
-                        <ArrowLeft className="w-5 h-5" />
+                        <motion.div
+                            animate={{ x: canGoBack ? 0 : 0 }}
+                            whileHover={{ x: -3 }}
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </motion.div>
                         <span className="text-sm font-medium">Back</span>
-                    </button>
+                    </motion.button>
 
                     {/* Divider */}
                     {projectName && (
@@ -333,23 +425,35 @@ export default function Layout({ children }) {
                                 const stepsBack = allCrumbs.length - 1 - actualIndex;
 
                                 return (
-                                    <div key={index} className="flex items-center gap-2 flex-shrink-0">
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        className="flex items-center gap-2 flex-shrink-0"
+                                    >
                                         {index > 0 && (
                                             <ChevronRight className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/40" />
                                         )}
                                         {!isLast ? (
-                                            <button
+                                            <motion.button
                                                 onClick={() => goBackN(stepsBack)}
-                                                className="text-sm text-nord-polar-4 dark:text-nord-snow-1/70 hover:text-nord-frost-4 dark:hover:text-nord-frost-2 whitespace-nowrap"
+                                                whileHover={{ scale: 1.02, color: '#88C0D0' }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className="text-sm text-nord-polar-4 dark:text-nord-snow-1/70 whitespace-nowrap"
                                             >
                                                 {crumb.label}
-                                            </button>
+                                            </motion.button>
                                         ) : (
-                                            <span className="text-sm text-nord-polar-3 dark:text-nord-snow-1 whitespace-nowrap">
+                                            <motion.span
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 whitespace-nowrap"
+                                            >
                                                 {crumb.label}
-                                            </span>
+                                            </motion.span>
                                         )}
-                                    </div>
+                                    </motion.div>
                                 );
                             })}
                         </div>

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
@@ -6,6 +7,7 @@ import ClassroomViewComponent from './components/ClassroomView';
 import StudentViewComponent from './components/StudentView';
 import CourseViewComponent from './components/CourseView';
 import WelcomeViewComponent from './components/WelcomeView';
+import { pageVariants } from './lib/animations';
 
 /**
  * App Component - Main application entry point
@@ -57,7 +59,18 @@ function AppContent() {
 
     return (
         <Layout>
-            <ViewComponent />
+            <AnimatePresence mode="popLayout">
+                <motion.div
+                    key={currentView}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="h-full"
+                >
+                    <ViewComponent />
+                </motion.div>
+            </AnimatePresence>
         </Layout>
     );
 }
@@ -72,3 +85,4 @@ export default function App() {
         </ThemeProvider>
     );
 }
+

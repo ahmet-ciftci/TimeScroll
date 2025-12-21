@@ -1,9 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getClassrooms } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
 import { Search, X, MapPin } from 'lucide-react';
 import CalendarGrid from './CalendarGrid';
 import Spinner from './Spinner';
+import {
+    dropdownVariants,
+    staggerContainer,
+    staggerItem,
+    buttonHover,
+    buttonTap,
+} from '../lib/animations';
 
 /**
  * ClassroomView Component
@@ -127,44 +135,63 @@ export default function ClassroomView() {
                     </div>
 
                     {/* Dropdown */}
-                    {isDropdownOpen && !selectedRoom && (
-                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto">
-                            {filteredClassrooms.length === 0 ? (
-                                <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
-                                    No classrooms found
-                                </div>
-                            ) : (
-                                filteredClassrooms.map(room => (
-                                    <button
-                                        key={room.classroom_id}
-                                        onClick={() => handleSelectRoom(room)}
-                                        className="w-full text-left px-4 py-3 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 transition-colors border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
-                                    >
-                                        <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
-                                            <HighlightedText text={room.classroom_id} query={searchQuery} />
-                                        </div>
-                                        <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
-                                            Capacity: {room.capacity} seats
-                                        </div>
-                                    </button>
-                                ))
-                            )}
-                        </div>
-                    )}
+                    <AnimatePresence>
+                        {isDropdownOpen && !selectedRoom && (
+                            <motion.div
+                                variants={dropdownVariants}
+                                initial="initial"
+                                animate="enter"
+                                exit="exit"
+                                className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto"
+                            >
+                                {filteredClassrooms.length === 0 ? (
+                                    <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
+                                        No classrooms found
+                                    </div>
+                                ) : (
+                                    <motion.div variants={staggerContainer} initial="initial" animate="enter">
+                                        {filteredClassrooms.map((room, index) => (
+                                            <motion.button
+                                                key={room.classroom_id}
+                                                variants={staggerItem}
+                                                whileHover={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', x: 4 }}
+                                                onClick={() => handleSelectRoom(room)}
+                                                className="w-full text-left px-4 py-3 border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
+                                            >
+                                                <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
+                                                    <HighlightedText text={room.classroom_id} query={searchQuery} />
+                                                </div>
+                                                <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
+                                                    Capacity: {room.capacity} seats
+                                                </div>
+                                            </motion.button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Selected Room Info */}
-                {selectedRoom && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-nord-frost-3/10 dark:bg-nord-frost-3/20 rounded-lg border border-nord-frost-3/30">
-                        <MapPin className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
-                        <span className="text-sm font-medium text-nord-frost-4 dark:text-nord-frost-2">
-                            {selectedRoom.classroom_id}
-                        </span>
-                        <span className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
-                            ({selectedRoom.capacity} seats)
-                        </span>
-                    </div>
-                )}
+                <AnimatePresence>
+                    {selectedRoom && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, x: -20 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex items-center gap-2 px-3 py-2 bg-nord-frost-3/10 dark:bg-nord-frost-3/20 rounded-lg border border-nord-frost-3/30"
+                        >
+                            <MapPin className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
+                            <span className="text-sm font-medium text-nord-frost-4 dark:text-nord-frost-2">
+                                {selectedRoom.classroom_id}
+                            </span>
+                            <span className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
+                                ({selectedRoom.capacity} seats)
+                            </span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Calendar Grid or Prompt */}

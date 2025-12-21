@@ -1,9 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getStudents } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
 import { Search, X, User } from 'lucide-react';
 import CalendarGrid from './CalendarGrid';
 import Spinner from './Spinner';
+import {
+    dropdownVariants,
+    staggerContainer,
+    staggerItem,
+    buttonHover,
+    buttonTap,
+} from '../lib/animations';
 
 /**
  * StudentView Component
@@ -130,43 +138,62 @@ export default function StudentView() {
                         </div>
 
                         {/* Dropdown */}
-                        {isDropdownOpen && !selectedStudent && (
-                            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto">
-                                {filteredStudents.length === 0 ? (
-                                    <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
-                                        No students found
-                                    </div>
-                                ) : (
-                                    filteredStudents.slice(0, 10).map(student => (
-                                        <button
-                                            key={student.student_id}
-                                            onClick={() => handleSelectStudent(student)}
-                                            className="w-full text-left px-4 py-3 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 transition-colors border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
-                                        >
-                                            <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
-                                                <HighlightedText text={student.student_id} query={searchQuery} />
-                                            </div>
-                                        </button>
-                                    ))
-                                )}
-                                {filteredStudents.length > 10 && (
-                                    <div className="px-4 py-2 text-xs text-nord-polar-4 dark:text-nord-snow-1/50 bg-nord-snow-1/50 dark:bg-nord-polar-3/50">
-                                        Showing 10 of {filteredStudents.length} results
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        <AnimatePresence>
+                            {isDropdownOpen && !selectedStudent && (
+                                <motion.div
+                                    variants={dropdownVariants}
+                                    initial="initial"
+                                    animate="enter"
+                                    exit="exit"
+                                    className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto"
+                                >
+                                    {filteredStudents.length === 0 ? (
+                                        <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
+                                            No students found
+                                        </div>
+                                    ) : (
+                                        <motion.div variants={staggerContainer} initial="initial" animate="enter">
+                                            {filteredStudents.slice(0, 10).map(student => (
+                                                <motion.button
+                                                    key={student.student_id}
+                                                    variants={staggerItem}
+                                                    whileHover={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', x: 4 }}
+                                                    onClick={() => handleSelectStudent(student)}
+                                                    className="w-full text-left px-4 py-3 border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
+                                                >
+                                                    <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
+                                                        <HighlightedText text={student.student_id} query={searchQuery} />
+                                                    </div>
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                    {filteredStudents.length > 10 && (
+                                        <div className="px-4 py-2 text-xs text-nord-polar-4 dark:text-nord-snow-1/50 bg-nord-snow-1/50 dark:bg-nord-polar-3/50">
+                                            Showing 10 of {filteredStudents.length} results
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Selected Student Info */}
-                    {selectedStudent && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-nord-frost-3/10 dark:bg-nord-frost-3/20 rounded-lg border border-nord-frost-3/30">
-                            <User className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
-                            <span className="text-sm font-medium text-nord-frost-4 dark:text-nord-frost-2">
-                                {selectedStudent.student_id}
-                            </span>
-                        </div>
-                    )}
+                    <AnimatePresence>
+                        {selectedStudent && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, x: -20 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="flex items-center gap-2 px-3 py-2 bg-nord-frost-3/10 dark:bg-nord-frost-3/20 rounded-lg border border-nord-frost-3/30"
+                            >
+                                <User className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
+                                <span className="text-sm font-medium text-nord-frost-4 dark:text-nord-frost-2">
+                                    {selectedStudent.student_id}
+                                </span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             )}
 

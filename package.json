@@ -27,6 +27,7 @@
         "@electron-toolkit/preload": "^3.0.2",
         "@electron-toolkit/utils": "^4.0.0",
         "better-sqlite3": "^12.5.0",
+        "framer-motion": "^12.23.26",
         "jspdf": "^3.0.4",
         "lucide-react": "^0.562.0"
     },

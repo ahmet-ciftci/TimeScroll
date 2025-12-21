@@ -10,7 +10,7 @@
 
     /* Smooth theme transitions */
     * {
-        @apply transition-colors duration-200;
+        @apply transition-colors duration-300 ease-out;
     }
 
     /* Light mode defaults */
@@ -96,13 +96,14 @@
     .input {
         @apply w-full px-3 py-2 rounded-lg border border-nord-snow-1;
         @apply bg-white text-nord-polar-1;
-        @apply focus:border-nord-frost-3 focus:ring-1 focus:ring-nord-frost-3;
+        @apply focus:border-nord-frost-3 focus:ring-2 focus:ring-nord-frost-3/30;
         @apply placeholder:text-nord-polar-4/60;
+        @apply transition-all duration-200 ease-out;
     }
 
     .dark .input {
         @apply border-nord-polar-3 bg-nord-polar-2 text-nord-snow-2;
-        @apply focus:border-nord-frost-2 focus:ring-nord-frost-2;
+        @apply focus:border-nord-frost-2 focus:ring-nord-frost-2/30;
         @apply placeholder:text-nord-snow-1/40;
     }
 

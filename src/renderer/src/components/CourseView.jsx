@@ -1,8 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getCourses, getExams } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
 import { Search, X, BookOpen, Users, User, Calendar, ChevronRight } from 'lucide-react';
 import Spinner from './Spinner';
+import {
+    dropdownVariants,
+    staggerContainer,
+    staggerItem,
+    cardVariants,
+    listItemHover,
+    buttonHover,
+    buttonTap,
+} from '../lib/animations';
 
 /**
  * CourseView Component
@@ -168,30 +178,42 @@ export default function CourseView() {
                         </div>
 
                         {/* Dropdown */}
-                        {isDropdownOpen && !selectedCourse && (
-                            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto">
-                                {filteredCourses.length === 0 ? (
-                                    <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
-                                        No courses found
-                                    </div>
-                                ) : (
-                                    filteredCourses.map(course => (
-                                        <button
-                                            key={course.course_code}
-                                            onClick={() => handleSelectCourse(course)}
-                                            className="w-full text-left px-4 py-3 hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 transition-colors border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
-                                        >
-                                            <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
-                                                <HighlightedText text={course.course_code} query={searchQuery} />
-                                            </div>
-                                            <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
-                                                {course.enrolled_students.length} students
-                                            </div>
-                                        </button>
-                                    ))
-                                )}
-                            </div>
-                        )}
+                        <AnimatePresence>
+                            {isDropdownOpen && !selectedCourse && (
+                                <motion.div
+                                    variants={dropdownVariants}
+                                    initial="initial"
+                                    animate="enter"
+                                    exit="exit"
+                                    className="absolute z-10 w-full mt-1 bg-white dark:bg-nord-polar-2 rounded-lg shadow-lg border border-nord-snow-1 dark:border-nord-polar-3 max-h-60 overflow-y-auto"
+                                >
+                                    {filteredCourses.length === 0 ? (
+                                        <div className="p-3 text-sm text-nord-polar-4 dark:text-nord-snow-1/60">
+                                            No courses found
+                                        </div>
+                                    ) : (
+                                        <motion.div variants={staggerContainer} initial="initial" animate="enter">
+                                            {filteredCourses.map(course => (
+                                                <motion.button
+                                                    key={course.course_code}
+                                                    variants={staggerItem}
+                                                    whileHover={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', x: 4 }}
+                                                    onClick={() => handleSelectCourse(course)}
+                                                    className="w-full text-left px-4 py-3 border-b border-nord-snow-1/50 dark:border-nord-polar-3/50 last:border-b-0"
+                                                >
+                                                    <div className="font-medium text-nord-polar-1 dark:text-nord-snow-2">
+                                                        <HighlightedText text={course.course_code} query={searchQuery} />
+                                                    </div>
+                                                    <div className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
+                                                        {course.enrolled_students.length} students
+                                                    </div>
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             )}
@@ -251,7 +273,12 @@ export default function CourseView() {
                     )}
 
                     {/* Enrolled Students List */}
-                    <div className="card">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="card"
+                    >
                         <h4 className="font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-4 flex items-center gap-2">
                             <Users className="w-4 h-4 text-nord-frost-4 dark:text-nord-frost-2" />
                             Enrolled Students
@@ -261,14 +288,20 @@ export default function CourseView() {
                                 No students enrolled in this course.
                             </p>
                         ) : (
-                            <div className="space-y-1">
-                                {enrolledStudentIds.map(studentId => (
-                                    <button
+                            <motion.div
+                                variants={staggerContainer}
+                                initial="initial"
+                                animate="enter"
+                                className="space-y-1"
+                            >
+                                {enrolledStudentIds.map((studentId, index) => (
+                                    <motion.button
                                         key={studentId}
+                                        variants={staggerItem}
+                                        whileHover={{ scale: 1.01, x: 4, backgroundColor: 'rgba(136, 192, 208, 0.1)' }}
+                                        whileTap={{ scale: 0.99 }}
                                         onClick={() => handleStudentClick(studentId)}
-                                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg 
-                                                   hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
-                                                   transition-colors group"
+                                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg group"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
@@ -280,12 +313,17 @@ export default function CourseView() {
                                                 {studentId}
                                             </p>
                                         </div>
-                                        <ChevronRight className="w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/40 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2" />
-                                    </button>
+                                        <motion.div
+                                            initial={{ x: 0 }}
+                                            whileHover={{ x: 4 }}
+                                        >
+                                            <ChevronRight className="w-4 h-4 text-nord-polar-4 dark:text-nord-snow-1/40 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2" />
+                                        </motion.div>
+                                    </motion.button>
                                 ))}
-                            </div>
+                            </motion.div>
                         )}
-                    </div>
+                    </motion.div>
                 </>
             ) : (
                 /* Prompt to select course */
