@@ -1,4 +1,4 @@
-class Student {
+export default class Student {
     constructor(studentId) {
         this.studentId = studentId;
         this.enrolledCourses = []; 
@@ -10,5 +10,3 @@ class Student {
         }
     }
 }
-
-module.exports = Student;

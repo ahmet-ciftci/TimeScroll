@@ -1,4 +1,4 @@
-class ExamSlot {
+export default class ExamSlot {
     constructor(courseCode, roomName, date, startTime, endTime) {
         this.courseCode = courseCode;
         this.roomName = roomName;
@@ -7,5 +7,3 @@ class ExamSlot {
         this.endTime = endTime; 
     }
 }
-
-module.exports = ExamSlot;

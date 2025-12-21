@@ -2,6 +2,10 @@ import { app, shell, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 
+// Import backend modules
+import DBManager from './database/DatabaseManager';
+import { registerIpcHandlers } from './ipcHandlers';
+
 function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
@@ -34,6 +38,12 @@ function createWindow() {
 
 // This method will be called when Electron has finished initialization.
 app.whenReady().then(() => {
+    // Initialize database
+    DBManager.connect();
+    
+    // Register all IPC handlers
+    registerIpcHandlers();
+
     // Set app user model id for windows
     electronApp.setAppUserModelId('com.timescroll.app');
 

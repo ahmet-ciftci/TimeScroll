@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getExams, getCourses } from '../services/dataService';
+import { getExams, getCourses, getSettings } from '../services/dataService';
 import { useNavigation } from '../contexts/NavigationContext';
-import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Clock, X } from 'lucide-react';
 import Spinner from './Spinner';
 import {
     buttonHover,
@@ -20,13 +20,37 @@ import {
  * CalendarGrid Component
  * 
  * Displays exams in a calendar-style grid.
- * Rows = Time slots (09:00-17:00), Columns = Days of the week (Mon-Sun).
+ * Rows = Time slots (dynamic based on settings), Columns = Days of the week (Mon-Sun).
  * Can be filtered by classroom or student.
  * Supports week navigation with Prev/Next buttons.
  */
 
-// All time slots from 9AM to 5PM (1-hour intervals)
-const TIME_SLOTS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+// Default time slots (fallback if settings not loaded)
+const DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+
+// Generate time slots based on settings
+// Matches the Scheduler's generateTimeSlots logic exactly
+function generateTimeSlots(startTime, endTime, durationMinutes) {
+    const slots = [];
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    
+    let currentTotalMinutes = startHour * 60 + startMin;
+    const endTotalMinutes = endHour * 60 + endMin;
+    
+    // Only add slot if the full exam duration fits before end time
+    while (currentTotalMinutes + durationMinutes <= endTotalMinutes) {
+        const hours = Math.floor(currentTotalMinutes / 60);
+        const mins = currentTotalMinutes % 60;
+        const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        slots.push(timeStr);
+        
+        // Advance by exam duration
+        currentTotalMinutes += durationMinutes;
+    }
+    
+    return slots.length > 0 ? slots : DEFAULT_TIME_SLOTS;
+}
 
 // Days of week labels
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -73,9 +97,16 @@ function formatWeekRange(monday) {
     return `${startStr} - ${endStr}`;
 }
 
-// Helper to find exam at specific date/time
-function findExamAtSlot(exams, date, time) {
-    return exams.find(e => e.date === date && e.time === time);
+// Helper to find ALL exams at specific date/time slot
+// Returns array of exams that start at the exact slot time
+function findExamsAtSlot(exams, date, slotTime) {
+    return exams.filter(e => {
+        if (e.date !== date) return false;
+        // Compare time slot to exam start time (compare hours and minutes)
+        const [slotHour, slotMin] = slotTime.split(':').map(Number);
+        const [examHour, examMin] = e.time.split(':').map(Number);
+        return slotHour === examHour && slotMin === examMin;
+    });
 }
 
 // Check if a date is today
@@ -96,10 +127,47 @@ export default function CalendarGrid({
 }) {
     const [exams, setExams] = useState([]);
     const [courses, setCourses] = useState([]);
+    const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentMonday, setCurrentMonday] = useState(() => getMonday(new Date()));
     const [direction, setDirection] = useState(0); // -1 for prev, 1 for next
-    const { navigateTo } = useNavigation();
+    const [popoverData, setPopoverData] = useState(null); // { exams, x, y } for popover
+    const popoverRef = useRef(null);
+    const { navigateTo, currentProfile } = useNavigation();
+
+    // Close popover when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+                setPopoverData(null);
+            }
+        }
+        if (popoverData) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [popoverData]);
+
+    // Handle showing popover for multiple exams
+    const handleShowMore = useCallback((exams, event) => {
+        event.stopPropagation();
+        const rect = event.currentTarget.getBoundingClientRect();
+        setPopoverData({
+            exams,
+            x: rect.left + rect.width / 2,
+            y: rect.bottom + 8
+        });
+    }, []);
+
+    // Generate time slots based on settings
+    const timeSlots = useMemo(() => {
+        if (!settings) return DEFAULT_TIME_SLOTS;
+        const startTime = settings.day_start_time || '09:00';
+        const endTime = settings.day_end_time || '17:00';
+        const duration = parseInt(settings.exam_duration, 10) || 60;
+        console.log('[CalendarGrid] Generating time slots with:', { startTime, endTime, duration });
+        return generateTimeSlots(startTime, endTime, duration);
+    }, [settings]);
 
     // Get week days for current view
     const weekDays = useMemo(() => getWeekDays(currentMonday), [currentMonday]);
@@ -136,9 +204,10 @@ export default function CalendarGrid({
         async function loadData() {
             setLoading(true);
             try {
-                const [examsResult, coursesResult] = await Promise.all([
-                    examsData ? Promise.resolve(examsData) : getExams(),
-                    getCourses()
+                const [examsResult, coursesResult, settingsResult] = await Promise.all([
+                    examsData ? Promise.resolve(examsData) : getExams(currentProfile),
+                    getCourses(currentProfile),
+                    getSettings(currentProfile)
                 ]);
 
                 let filteredExams = examsResult;
@@ -156,6 +225,7 @@ export default function CalendarGrid({
 
                 setExams(filteredExams);
                 setCourses(coursesResult);
+                setSettings(settingsResult);
             } catch (error) {
                 console.error('Failed to load calendar data:', error);
             } finally {
@@ -163,7 +233,7 @@ export default function CalendarGrid({
             }
         }
         loadData();
-    }, [filterByClassroom, filterByStudent, examsData]);
+    }, [filterByClassroom, filterByStudent, examsData, currentProfile]);
 
     // Handle exam cell click
     const handleExamClick = (exam) => {
@@ -275,20 +345,25 @@ export default function CalendarGrid({
 
                             {/* Body rows with time slots */}
                             <tbody>
-                                {TIME_SLOTS.map(time => (
+                                {timeSlots.map(time => (
                                     <tr key={time} className="h-20 hover:bg-nord-snow-2/30 dark:hover:bg-nord-polar-3/20">
                                         <td className="p-2 text-sm font-medium text-nord-polar-4 dark:text-nord-snow-1/60 border-b border-nord-snow-1 dark:border-nord-polar-3 whitespace-nowrap align-top pt-3">
                                             {time}
                                         </td>
 
                                         {weekDays.map(date => {
-                                            const exam = findExamAtSlot(exams, date, time);
+                                            const slotExams = findExamsAtSlot(exams, date, time);
+                                            const primaryExam = slotExams[0];
+                                            const additionalCount = slotExams.length - 1;
                                             const todayCell = isToday(date);
 
-                                            // Calculate height based on duration (60min = 76px)
-                                            const baseHeight = 76;
-                                            const examHeight = exam
-                                                ? Math.round((exam.duration_minutes / 60) * baseHeight)
+                                            // Calculate height based on duration relative to slot duration
+                                            // Each row represents one slot (exam_duration minutes)
+                                            // Base height of 72px = one slot
+                                            const slotDuration = settings?.exam_duration ? parseInt(settings.exam_duration) : 60;
+                                            const baseHeight = 72;
+                                            const examHeight = primaryExam
+                                                ? Math.round((primaryExam.duration_minutes / slotDuration) * baseHeight)
                                                 : baseHeight;
 
                                             return (
@@ -299,9 +374,9 @@ export default function CalendarGrid({
                                                 >
                                                     {/* Container for exam card - relative positioning base */}
                                                     <div className="h-[72px]">
-                                                        {exam ? (
+                                                        {primaryExam ? (
                                                             <motion.button
-                                                                onClick={() => handleExamClick(exam)}
+                                                                onClick={() => handleExamClick(primaryExam)}
                                                                 style={{ height: `${examHeight}px` }}
                                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
@@ -319,18 +394,35 @@ export default function CalendarGrid({
                                                                    cursor-pointer group overflow-hidden z-10 shadow-sm"
                                                             >
                                                                 <div className="font-medium text-sm text-white dark:text-nord-snow-2 truncate leading-tight">
-                                                                    {exam.course_code}
+                                                                    {primaryExam.course_code}
                                                                 </div>
                                                                 <div className="flex items-center gap-1.5 mt-1 text-xs text-white/80 dark:text-nord-snow-1/80">
                                                                     <span className="flex items-center gap-0.5">
                                                                         <MapPin className="w-3 h-3 flex-shrink-0" />
-                                                                        {exam.classroom_id}
+                                                                        {primaryExam.classroom_id}
                                                                     </span>
                                                                     <span className="flex items-center gap-0.5">
                                                                         <Clock className="w-3 h-3 flex-shrink-0" />
-                                                                        {exam.duration_minutes}m
+                                                                        {primaryExam.duration_minutes}m
                                                                     </span>
                                                                 </div>
+                                                                {/* Badge showing additional concurrent exams */}
+                                                                {additionalCount > 0 && (
+                                                                    <motion.span
+                                                                        onClick={(e) => handleShowMore(slotExams, e)}
+                                                                        whileHover={{ scale: 1.1 }}
+                                                                        whileTap={{ scale: 0.95 }}
+                                                                        className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5
+                                                                                   flex items-center justify-center
+                                                                                   bg-nord-aurora-yellow text-nord-polar-1
+                                                                                   text-xs font-bold rounded-full
+                                                                                   shadow-md border-2 border-white dark:border-nord-polar-2
+                                                                                   cursor-pointer hover:bg-nord-aurora-orange
+                                                                                   transition-colors z-20"
+                                                                    >
+                                                                        +{additionalCount}
+                                                                    </motion.span>
+                                                                )}
                                                             </motion.button>
                                                         ) : (
                                                             <div className="w-full h-full rounded-lg border border-dashed border-nord-snow-1/50 dark:border-nord-polar-3/30" />
@@ -346,6 +438,82 @@ export default function CalendarGrid({
                     </motion.div>
                 </AnimatePresence>
             </div>
+
+            {/* Popover for concurrent exams */}
+            <AnimatePresence>
+                {popoverData && (
+                    <motion.div
+                        ref={popoverRef}
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                            position: 'fixed',
+                            left: popoverData.x,
+                            top: popoverData.y,
+                            transform: 'translateX(-50%)',
+                            zIndex: 50
+                        }}
+                        className="bg-white dark:bg-nord-polar-2 rounded-xl shadow-2xl 
+                                   border border-nord-snow-1 dark:border-nord-polar-3
+                                   p-3 min-w-[240px] max-w-[320px]"
+                    >
+                        {/* Popover header */}
+                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-nord-snow-1 dark:border-nord-polar-3">
+                            <span className="text-sm font-medium text-nord-polar-2 dark:text-nord-snow-1">
+                                {popoverData.exams.length} Concurrent Exams
+                            </span>
+                            <button
+                                onClick={() => setPopoverData(null)}
+                                className="p-1 rounded-md hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3
+                                           text-nord-polar-4 dark:text-nord-snow-2 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        
+                        {/* Exam list */}
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                            {popoverData.exams.map((exam, index) => (
+                                <motion.button
+                                    key={exam.exam_id || index}
+                                    onClick={() => {
+                                        handleExamClick(exam);
+                                        setPopoverData(null);
+                                    }}
+                                    whileHover={{ x: 4 }}
+                                    className="w-full text-left p-2 rounded-lg
+                                               bg-nord-frost-3/10 dark:bg-nord-frost-4/20
+                                               hover:bg-nord-frost-3/20 dark:hover:bg-nord-frost-4/30
+                                               border border-transparent hover:border-nord-frost-3/30
+                                               transition-colors cursor-pointer"
+                                >
+                                    <div className="font-medium text-sm text-nord-polar-1 dark:text-nord-snow-1">
+                                        {exam.course_code}
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-nord-polar-4 dark:text-nord-snow-2/70">
+                                        <span className="flex items-center gap-1">
+                                            <MapPin className="w-3 h-3" />
+                                            {exam.classroom_id}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Clock className="w-3 h-3" />
+                                            {exam.time} • {exam.duration_minutes}m
+                                        </span>
+                                    </div>
+                                </motion.button>
+                            ))}
+                        </div>
+                        
+                        {/* Arrow pointer */}
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 
+                                        w-0 h-0 border-l-8 border-r-8 border-b-8 
+                                        border-l-transparent border-r-transparent 
+                                        border-b-white dark:border-b-nord-polar-2" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

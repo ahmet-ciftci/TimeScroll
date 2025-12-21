@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigation } from '../contexts/NavigationContext';
-import { Calendar, Plus, Clock, Folder, ChevronRight, X, Upload, Check } from 'lucide-react';
+import { Calendar, Plus, Clock, Folder, ChevronRight, X, Upload, Check, Loader2, Trash2 } from 'lucide-react';
 import {
     heroContainerVariants,
     heroItemVariants,
@@ -27,11 +27,51 @@ import {
  */
 
 export default function WelcomeView() {
-    const { navigateToRoot } = useNavigation();
+    const { openSchedule } = useNavigation();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [recentProjects, setRecentProjects] = useState([]);
+    const [loadingProjects, setLoadingProjects] = useState(true);
 
-    // TODO: Fetch recent projects from electron-store
-    const recentProjects = [];
+    // Fetch recent projects on mount
+    useEffect(() => {
+        async function loadRecentProjects() {
+            try {
+                console.log('[WelcomeView] Fetching recent projects...');
+                const projects = await window.api.getRecentProjects();
+                console.log('[WelcomeView] Received projects:', projects);
+                setRecentProjects(projects);
+            } catch (error) {
+                console.error('Failed to load recent projects:', error);
+            } finally {
+                setLoadingProjects(false);
+            }
+        }
+        loadRecentProjects();
+    }, []);
+
+    // Handle opening a recent project
+    const handleOpenProject = (project) => {
+        // Set the current profile and navigate to dashboard
+        openSchedule(project.profileName);
+    };
+
+    // Handle deleting a project
+    const handleDeleteProject = async (e, project) => {
+        e.stopPropagation(); // Don't trigger the card click
+        
+        if (confirm(`Are you sure you want to delete "${project.name}"? This cannot be undone.`)) {
+            try {
+                await window.api.deleteProfile(project.profileName);
+                // Refresh the projects list
+                const projects = await window.api.getRecentProjects();
+                setRecentProjects(projects);
+            } catch (error) {
+                console.error('Failed to delete project:', error);
+            }
+        }
+    };
+
+    console.log('[WelcomeView] Render - loadingProjects:', loadingProjects, 'recentProjects:', recentProjects);
 
     return (
         <div className="min-h-full flex flex-col">
@@ -100,54 +140,64 @@ export default function WelcomeView() {
                     Recent Projects
                 </motion.h2>
 
-                {recentProjects.length > 0 ? (
+                {loadingProjects ? (
                     <motion.div
-                        variants={staggerContainer}
-                        initial="initial"
-                        animate="enter"
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="card text-center py-12 text-nord-polar-4 dark:text-nord-snow-1/60"
                     >
-                        {recentProjects.map((project, index) => (
-                            <motion.button
-                                key={project.id}
-                                variants={cardVariants}
-                                whileHover={cardHover}
-                                whileTap={cardTap}
-                                onClick={() => navigateToRoot('dashboard')}
-                                className="card text-left group"
-                            >
-                                <div className="flex items-start gap-4">
-                                    <motion.div
-                                        initial={{ scale: 0.8, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ delay: 0.8 + index * 0.1 }}
-                                        className="w-12 h-12 rounded-xl bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
-                                                    flex items-center justify-center flex-shrink-0"
-                                    >
-                                        <Folder className="w-6 h-6 text-nord-frost-4 dark:text-nord-frost-2" />
-                                    </motion.div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2 
-                                                      group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
-                                                      truncate">
-                                            {project.name}
-                                        </p>
-                                        <p className="text-sm text-nord-polar-4 dark:text-nord-snow-1/60 mt-1">
-                                            {formatDate(project.createdAt)}
-                                        </p>
-                                    </div>
-                                    <motion.div
-                                        initial={{ x: 0 }}
-                                        whileHover={{ x: 4 }}
-                                    >
-                                        <ChevronRight className="w-5 h-5 text-nord-polar-4/50 dark:text-nord-snow-1/30 
-                                                                      group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
-                                                                      flex-shrink-0 mt-1" />
-                                    </motion.div>
-                                </div>
-                            </motion.button>
-                        ))}
+                        <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-nord-frost-3" />
+                        <p>Loading projects...</p>
                     </motion.div>
+                ) : recentProjects.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {recentProjects.map((project, index) => (
+                            <div
+                                key={project.id}
+                                className="card text-left group relative"
+                            >
+                                <button
+                                    onClick={() => handleOpenProject(project)}
+                                    className="w-full text-left"
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
+                                                        flex items-center justify-center flex-shrink-0"
+                                        >
+                                            <Calendar className="w-6 h-6 text-nord-frost-4 dark:text-nord-frost-2" />
+                                        </div>
+                                        <div className="flex-1 min-w-0 pr-8">
+                                            <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2 
+                                                          group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
+                                                          truncate">
+                                                {project.name}
+                                            </p>
+                                            <p className="text-sm text-nord-polar-4 dark:text-nord-snow-1/60 mt-1">
+                                                {formatDate(project.createdAt)}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <ChevronRight className="w-5 h-5 text-nord-polar-4/50 dark:text-nord-snow-1/30 
+                                                                          group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
+                                                                          flex-shrink-0 mt-1" />
+                                        </div>
+                                    </div>
+                                </button>
+                                {/* Delete button */}
+                                <button
+                                    onClick={(e) => handleDeleteProject(e, project)}
+                                    className="absolute top-3 right-3 p-2 rounded-lg opacity-0 group-hover:opacity-100
+                                               text-nord-polar-4 hover:text-nord-aurora-0 
+                                               dark:text-nord-snow-1/50 dark:hover:text-nord-aurora-0
+                                               hover:bg-nord-aurora-0/10 dark:hover:bg-nord-aurora-0/20
+                                               transition-all duration-200"
+                                    title="Delete project"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -174,31 +224,82 @@ export default function WelcomeView() {
 
 // New Schedule Dialog Component
 function NewScheduleDialog({ onClose }) {
+    const { openSchedule } = useNavigation();
     const [scheduleName, setScheduleName] = useState('');
-    const [classroomFile, setClassroomFile] = useState(null);
-    const [enrollmentFile, setEnrollmentFile] = useState(null);
+    const [classroomFilePath, setClassroomFilePath] = useState(null);
+    const [enrollmentFilePath, setEnrollmentFilePath] = useState(null);
     const [examDuration, setExamDuration] = useState('');
     const [minScheduleDays, setMinScheduleDays] = useState('');
     const [maxScheduleDays, setMaxScheduleDays] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    const classroomInputRef = useRef(null);
-    const enrollmentInputRef = useRef(null);
+    // Use Electron dialog to select files
+    const handleSelectClassroomFile = async () => {
+        const filePath = await window.api.selectFile();
+        if (filePath) {
+            setClassroomFilePath(filePath);
+        }
+    };
 
-    const handleCreate = () => {
-        // TODO: Implement schedule creation
-        console.log('Creating schedule:', {
-            scheduleName,
-            classroomFile,
-            enrollmentFile,
-            examDuration: parseInt(examDuration),
-            minScheduleDays: parseInt(minScheduleDays),
-            maxScheduleDays: parseInt(maxScheduleDays),
-            startTime,
-            endTime
-        });
-        onClose();
+    const handleSelectEnrollmentFile = async () => {
+        const filePath = await window.api.selectFile();
+        if (filePath) {
+            setEnrollmentFilePath(filePath);
+        }
+    };
+
+    const handleCreate = async () => {
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+            // Generate the profile name first
+            const profileName = scheduleName && scheduleName.trim() 
+                ? scheduleName.trim() 
+                : `Schedule_${new Date().toISOString().split('T')[0]}_${Date.now()}`;
+            
+            // Import data from CSV files (scoped to this profile)
+            const importResult = await window.api.importData({
+                profileName,
+                classroomsPath: classroomFilePath,
+                enrollmentsPath: enrollmentFilePath
+            });
+            
+            if (!importResult.success) {
+                throw new Error(importResult.error || 'Failed to import data');
+            }
+            
+            // Generate the schedule with settings
+            const scheduleResult = await window.api.generateSchedule({
+                scheduleName: profileName,
+                settings: {
+                    exam_duration: parseInt(examDuration) || 90,
+                    min_exam_days: parseInt(minScheduleDays) || 5,
+                    max_exam_days: parseInt(maxScheduleDays) || 30,
+                    day_start_time: startTime || '09:00',
+                    day_end_time: endTime || '18:00'
+                }
+            });
+            
+            if (!scheduleResult.success) {
+                throw new Error(scheduleResult.error || 'Failed to generate schedule');
+            }
+            
+            console.log('Schedule created successfully:', scheduleResult);
+            
+            // Close dialog and open the new schedule
+            onClose();
+            openSchedule(scheduleResult.profileName);
+            
+        } catch (err) {
+            console.error('Schedule creation failed:', err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     // Regex for HH:MM format (24-hour)
@@ -238,8 +339,8 @@ function NewScheduleDialog({ onClose }) {
 
     const isFormValid =
         scheduleName.trim() &&
-        classroomFile &&
-        enrollmentFile &&
+        classroomFilePath &&
+        enrollmentFilePath &&
         examDuration &&
         minScheduleDays &&
         maxScheduleDays &&
@@ -319,26 +420,20 @@ function NewScheduleDialog({ onClose }) {
                         <p className="text-xs text-nord-polar-4 dark:text-nord-snow-1/50 mb-2">
                             Columns: Room Name, Capacity
                         </p>
-                        <input
-                            ref={classroomInputRef}
-                            type="file"
-                            accept=".csv"
-                            onChange={(e) => setClassroomFile(e.target.files[0] || null)}
-                            className="hidden"
-                        />
                         <button
-                            onClick={() => classroomInputRef.current?.click()}
+                            onClick={handleSelectClassroomFile}
+                            disabled={isLoading}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed
                                 transition-colors text-left
-                                ${classroomFile
+                                ${classroomFilePath
                                     ? 'border-nord-aurora-green bg-nord-aurora-green/10 dark:bg-nord-aurora-green/20'
                                     : 'border-nord-snow-1 dark:border-nord-polar-3 hover:border-nord-frost-3/50'}`}
                         >
-                            {classroomFile ? (
+                            {classroomFilePath ? (
                                 <>
                                     <Check className="w-5 h-5 text-nord-aurora-green" />
                                     <span className="text-nord-polar-2 dark:text-nord-snow-2 truncate">
-                                        {classroomFile.name}
+                                        {classroomFilePath.split('/').pop()}
                                     </span>
                                 </>
                             ) : (
@@ -360,26 +455,20 @@ function NewScheduleDialog({ onClose }) {
                         <p className="text-xs text-nord-polar-4 dark:text-nord-snow-1/50 mb-2">
                             Columns: Course Code, Student ID
                         </p>
-                        <input
-                            ref={enrollmentInputRef}
-                            type="file"
-                            accept=".csv"
-                            onChange={(e) => setEnrollmentFile(e.target.files[0] || null)}
-                            className="hidden"
-                        />
                         <button
-                            onClick={() => enrollmentInputRef.current?.click()}
+                            onClick={handleSelectEnrollmentFile}
+                            disabled={isLoading}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed
                                 transition-colors text-left
-                                ${enrollmentFile
+                                ${enrollmentFilePath
                                     ? 'border-nord-aurora-green bg-nord-aurora-green/10 dark:bg-nord-aurora-green/20'
                                     : 'border-nord-snow-1 dark:border-nord-polar-3 hover:border-nord-frost-3/50'}`}
                         >
-                            {enrollmentFile ? (
+                            {enrollmentFilePath ? (
                                 <>
                                     <Check className="w-5 h-5 text-nord-aurora-green" />
                                     <span className="text-nord-polar-2 dark:text-nord-snow-2 truncate">
-                                        {enrollmentFile.name}
+                                        {enrollmentFilePath.split('/').pop()}
                                     </span>
                                 </>
                             ) : (
@@ -470,30 +559,47 @@ function NewScheduleDialog({ onClose }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="flex justify-end gap-3 pt-2"
+                    className="space-y-3 pt-2"
                 >
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-lg text-nord-polar-3 dark:text-nord-snow-1
-                                   hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3"
-                    >
-                        Cancel
-                    </motion.button>
-                    <motion.button
-                        whileHover={isFormValid ? primaryButtonHover : {}}
-                        whileTap={isFormValid ? buttonTap : {}}
-                        onClick={handleCreate}
-                        disabled={!isFormValid}
-                        className={`px-5 py-2 rounded-lg font-medium
-                            ${isFormValid
-                                ? 'bg-nord-frost-3 hover:bg-nord-frost-4 dark:bg-nord-frost-2 dark:hover:bg-nord-frost-1 text-white dark:text-nord-polar-1'
-                                : 'bg-nord-snow-1 dark:bg-nord-polar-3 text-nord-polar-4/50 dark:text-nord-snow-1/30 cursor-not-allowed'
-                            }`}
-                    >
-                        Create Schedule
-                    </motion.button>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
+                    
+                    <div className="flex justify-end gap-3">
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={onClose}
+                            disabled={isLoading}
+                            className="px-4 py-2 rounded-lg text-nord-polar-3 dark:text-nord-snow-1
+                                       hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 disabled:opacity-50"
+                        >
+                            Cancel
+                        </motion.button>
+                        <motion.button
+                            whileHover={isFormValid && !isLoading ? primaryButtonHover : {}}
+                            whileTap={isFormValid && !isLoading ? buttonTap : {}}
+                            onClick={handleCreate}
+                            disabled={!isFormValid || isLoading}
+                            className={`px-5 py-2 rounded-lg font-medium flex items-center gap-2
+                                ${isFormValid && !isLoading
+                                    ? 'bg-nord-frost-3 hover:bg-nord-frost-4 dark:bg-nord-frost-2 dark:hover:bg-nord-frost-1 text-white dark:text-nord-polar-1'
+                                    : 'bg-nord-snow-1 dark:bg-nord-polar-3 text-nord-polar-4/50 dark:text-nord-snow-1/30 cursor-not-allowed'
+                                }`}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                'Create Schedule'
+                            )}
+                        </motion.button>
+                    </div>
                 </motion.div>
             </motion.div>
         </motion.div>

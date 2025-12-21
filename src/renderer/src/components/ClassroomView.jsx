@@ -35,7 +35,7 @@ function HighlightedText({ text, query }) {
 }
 
 export default function ClassroomView() {
-    const { viewParams, navigateTo } = useNavigation();
+    const { viewParams, navigateTo, currentProfile } = useNavigation();
     const [classrooms, setClassrooms] = useState([]);
     // Initialize from viewParams if available (restores state on back navigation)
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -48,7 +48,7 @@ export default function ClassroomView() {
         async function loadClassrooms() {
             setLoading(true);
             try {
-                const data = await getClassrooms();
+                const data = await getClassrooms(currentProfile);
                 setClassrooms(data);
 
                 // Restore selected room from viewParams after classrooms load
@@ -68,7 +68,7 @@ export default function ClassroomView() {
             }
         }
         loadClassrooms();
-    }, [viewParams.classroomId]);
+    }, [viewParams.classroomId, currentProfile]);
 
     // Filter classrooms based on search
     const filteredClassrooms = useMemo(() => {

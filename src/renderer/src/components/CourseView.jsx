@@ -37,7 +37,7 @@ function HighlightedText({ text, query }) {
 }
 
 export default function CourseView() {
-    const { viewParams, navigateTo } = useNavigation();
+    const { viewParams, navigateTo, currentProfile } = useNavigation();
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -55,8 +55,8 @@ export default function CourseView() {
             setLoading(true);
             try {
                 const [coursesData, examsData] = await Promise.all([
-                    getCourses(),
-                    getExams()
+                    getCourses(currentProfile),
+                    getExams(currentProfile)
                 ]);
 
                 setCourses(coursesData);
@@ -87,13 +87,13 @@ export default function CourseView() {
             }
         }
         loadData();
-    }, [courseFromParams, viewParams.examId]);
+    }, [courseFromParams, viewParams.examId, currentProfile]);
 
     // Update enrolled students when course selection changes (sidebar access)
     useEffect(() => {
         if (selectedCourse && !courseFromParams) {
             async function loadCourseDetails() {
-                const examsData = await getExams();
+                const examsData = await getExams(currentProfile);
 
                 const foundExam = examsData.find(e => e.course_code === selectedCourse.course_code);
                 setExam(foundExam);
@@ -101,7 +101,7 @@ export default function CourseView() {
             }
             loadCourseDetails();
         }
-    }, [selectedCourse, courseFromParams]);
+    }, [selectedCourse, courseFromParams, currentProfile]);
 
     // Filter courses based on search
     const filteredCourses = useMemo(() => {

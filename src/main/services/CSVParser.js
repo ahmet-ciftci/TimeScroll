@@ -1,7 +1,7 @@
-const fs = require('fs');
-const Student = require('../models/Student');
-const Course = require('../models/Course');
-const Classroom = require('../models/Classroom');
+import fs from 'fs';
+import Student from '../models/Student';
+import Course from '../models/Course';
+import Classroom from '../models/Classroom';
 
 class CSVParser {
   /**
@@ -103,4 +103,4 @@ class CSVParser {
   }
 }
 
-module.exports = CSVParser;
+export default CSVParser;

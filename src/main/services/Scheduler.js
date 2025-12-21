@@ -1,4 +1,4 @@
-const ExamSlot = require('../models/ExamSlot');
+import ExamSlot from '../models/ExamSlot';
 
 class Scheduler {
     constructor(globalSettings) {
@@ -7,13 +7,48 @@ class Scheduler {
             minExamDays: parseInt(globalSettings.min_exam_days || 5),
             maxExamDays: parseInt(globalSettings.max_exam_days || 10),
             dayStartTime: globalSettings.day_start_time || "09:00",
-            dayEndTime: globalSettings.day_end_time || "18:00"
+            dayEndTime: globalSettings.day_end_time || "18:00",
+            // Start date for the exam schedule (defaults to next Monday)
+            startDate: globalSettings.start_date || this.getNextMonday()
         };
 
         this.assignedSlots = []; 
         this.failedCourses = []; 
         this.maxExamsPerDay = 2; 
     }
+
+    /**
+     * Get the next Monday from today
+     */
+    getNextMonday() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+        const nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() + daysUntilMonday);
+        return this.formatDate(nextMonday);
+    }
+
+    /**
+     * Format a Date object to YYYY-MM-DD string
+     */
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    /**
+     * Get the date string for a specific day number (1-indexed)
+     */
+    getDateForDay(dayNumber) {
+        const startDate = new Date(this.globalSettings.startDate);
+        const targetDate = new Date(startDate);
+        targetDate.setDate(startDate.getDate() + (dayNumber - 1));
+        return this.formatDate(targetDate);
+    }
+
     // core algorithm
     generateSchedule(courses, students, classrooms) {
         console.log("[Scheduler] Generation started...");
@@ -56,7 +91,8 @@ class Scheduler {
         const dailyStartTimes = this.generateTimeSlots();
 
         for (let day = 1; day <= totalDays; day++) {
-            const dateStr = `Day ${day}`;
+            // Use actual calendar date instead of "Day N"
+            const dateStr = this.getDateForDay(day);
 
             for (const time of dailyStartTimes) {
                 const validRooms = classrooms.filter(r => r.capacity >= course.studentCount);
@@ -174,4 +210,4 @@ checkConsecutiveGap(student, newTime, date, allStudents) {
     }
 }
 
-module.exports = Scheduler;
+export default Scheduler;

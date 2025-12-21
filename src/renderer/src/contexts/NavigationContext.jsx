@@ -4,7 +4,8 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
  * Navigation Context
  * 
  * Provides centralized navigation state management across the app.
- * Handles view switching, history management, and sidebar state persistence.
+ * Handles view switching, history management, sidebar state persistence,
+ * and current schedule profile tracking.
  */
 
 const NavigationContext = createContext(null);
@@ -20,6 +21,7 @@ export const VIEW_CONFIG = {
 
 const STORAGE_KEYS = {
     SIDEBAR_COLLAPSED: 'timescroll_sidebar_collapsed',
+    CURRENT_PROFILE: 'timescroll_current_profile',
 };
 
 export function NavigationProvider({ children }) {
@@ -27,6 +29,15 @@ export function NavigationProvider({ children }) {
     const [currentView, setCurrentView] = useState('welcome');
     const [viewParams, setViewParams] = useState({});
     const [viewHistory, setViewHistory] = useState([{ view: 'welcome', params: {} }]);
+
+    // Current schedule profile
+    const [currentProfile, setCurrentProfileState] = useState(() => {
+        try {
+            return localStorage.getItem(STORAGE_KEYS.CURRENT_PROFILE) || null;
+        } catch {
+            return null;
+        }
+    });
 
     // Sidebar state with localStorage persistence
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -46,6 +57,32 @@ export function NavigationProvider({ children }) {
             // localStorage not available
         }
     }, [isSidebarCollapsed]);
+
+    // Persist current profile
+    useEffect(() => {
+        try {
+            if (currentProfile) {
+                localStorage.setItem(STORAGE_KEYS.CURRENT_PROFILE, currentProfile);
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_PROFILE);
+            }
+        } catch {
+            // localStorage not available
+        }
+    }, [currentProfile]);
+
+    // Set current profile with navigation
+    const setCurrentProfile = useCallback((profileName) => {
+        setCurrentProfileState(profileName);
+    }, []);
+
+    // Open a schedule (set profile and navigate to dashboard)
+    const openSchedule = useCallback((profileName) => {
+        setCurrentProfileState(profileName);
+        setViewHistory([{ view: 'dashboard', params: {} }]);
+        setCurrentView('dashboard');
+        setViewParams({});
+    }, []);
 
     // Toggle sidebar
     const toggleSidebar = useCallback(() => {
@@ -119,6 +156,9 @@ export function NavigationProvider({ children }) {
         activeNavItem,
         canGoBack,
 
+        // Current schedule profile
+        currentProfile,
+
         // Sidebar state
         isSidebarCollapsed,
 
@@ -128,6 +168,8 @@ export function NavigationProvider({ children }) {
         goBack,
         goBackN,
         toggleSidebar,
+        setCurrentProfile,
+        openSchedule,
     };
 
     return (

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigation, VIEW_CONFIG } from '../contexts/NavigationContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { exportCalendarToPDF } from '../services/pdfExportService';
+import { exportToJSON, exportToCSV } from '../services/exportService';
 import { getExams } from '../services/dataService';
 import {
     sidebarVariants,
@@ -25,7 +25,8 @@ import {
     ArrowLeft,
     Sun,
     Moon,
-    Upload,
+    FileJson,
+    FileSpreadsheet,
     HelpCircle,
 } from 'lucide-react';
 
@@ -58,6 +59,7 @@ export default function Layout({ children }) {
         goBack,
         goBackN,
         toggleSidebar,
+        currentProfile,
     } = useNavigation();
     const { isDarkMode, toggleTheme } = useTheme();
 
@@ -252,47 +254,90 @@ export default function Layout({ children }) {
 
                 {/* Footer with theme toggle, export, and help */}
                 <div className="p-2 border-t border-nord-snow-1 dark:border-nord-polar-3 space-y-1">
-                    {/* Export Button - only show when project is loaded */}
+                    {/* Export Buttons - only show when project is loaded */}
                     <AnimatePresence>
                         {activeNavItem !== 'welcome' && (
-                            <motion.button
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                whileHover={buttonHover}
-                                whileTap={buttonTap}
-                                onClick={async () => {
-                                    try {
-                                        const exams = await getExams();
-                                        await exportCalendarToPDF(exams, 'exam-schedule');
-                                    } catch (error) {
-                                        console.error('Export failed:', error);
-                                    }
-                                }}
-                                className={`
-                                    w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                                    text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
-                                    dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
-                                    cursor-pointer
-                                    ${isSidebarCollapsed ? 'justify-center px-0' : ''}
-                                `}
-                                title={isSidebarCollapsed ? 'Export' : undefined}
-                                aria-label="Export schedule"
-                            >
-                                <Upload className="w-5 h-5 flex-shrink-0" />
-                                <AnimatePresence mode="wait">
-                                    {!isSidebarCollapsed && (
-                                        <motion.span
-                                            initial={{ opacity: 0, width: 0 }}
-                                            animate={{ opacity: 1, width: 'auto' }}
-                                            exit={{ opacity: 0, width: 0 }}
-                                            className="truncate"
-                                        >
-                                            Export
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
-                            </motion.button>
+                            <>
+                                {/* Export JSON Button */}
+                                <motion.button
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    whileHover={buttonHover}
+                                    whileTap={buttonTap}
+                                    onClick={async () => {
+                                        try {
+                                            const exams = await getExams(currentProfile);
+                                            exportToJSON(exams, currentProfile || 'exam-schedule');
+                                        } catch (error) {
+                                            console.error('JSON Export failed:', error);
+                                        }
+                                    }}
+                                    className={`
+                                        w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                                        text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                                        dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                                        cursor-pointer
+                                        ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                                    `}
+                                    title={isSidebarCollapsed ? 'Export JSON' : undefined}
+                                    aria-label="Export as JSON"
+                                >
+                                    <FileJson className="w-5 h-5 flex-shrink-0" />
+                                    <AnimatePresence mode="wait">
+                                        {!isSidebarCollapsed && (
+                                            <motion.span
+                                                initial={{ opacity: 0, width: 0 }}
+                                                animate={{ opacity: 1, width: 'auto' }}
+                                                exit={{ opacity: 0, width: 0 }}
+                                                className="truncate"
+                                            >
+                                                Export JSON
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.button>
+
+                                {/* Export CSV Button */}
+                                <motion.button
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    whileHover={buttonHover}
+                                    whileTap={buttonTap}
+                                    onClick={async () => {
+                                        try {
+                                            const exams = await getExams(currentProfile);
+                                            exportToCSV(exams, currentProfile || 'exam-schedule');
+                                        } catch (error) {
+                                            console.error('CSV Export failed:', error);
+                                        }
+                                    }}
+                                    className={`
+                                        w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                                        text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1
+                                        dark:text-nord-snow-1 dark:hover:bg-nord-polar-3 dark:hover:text-nord-snow-2
+                                        cursor-pointer
+                                        ${isSidebarCollapsed ? 'justify-center px-0' : ''}
+                                    `}
+                                    title={isSidebarCollapsed ? 'Export CSV' : undefined}
+                                    aria-label="Export as CSV"
+                                >
+                                    <FileSpreadsheet className="w-5 h-5 flex-shrink-0" />
+                                    <AnimatePresence mode="wait">
+                                        {!isSidebarCollapsed && (
+                                            <motion.span
+                                                initial={{ opacity: 0, width: 0 }}
+                                                animate={{ opacity: 1, width: 'auto' }}
+                                                exit={{ opacity: 0, width: 0 }}
+                                                className="truncate"
+                                            >
+                                                Export CSV
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.button>
+                            </>
                         )}
                     </AnimatePresence>
 

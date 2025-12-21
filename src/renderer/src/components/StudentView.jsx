@@ -35,7 +35,7 @@ function HighlightedText({ text, query }) {
 }
 
 export default function StudentView() {
-    const { viewParams, navigateTo } = useNavigation();
+    const { viewParams, navigateTo, currentProfile } = useNavigation();
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +50,7 @@ export default function StudentView() {
         async function loadStudents() {
             setLoading(true);
             try {
-                const data = await getStudents();
+                const data = await getStudents(currentProfile);
                 setStudents(data);
 
                 // If we have a studentId from navigation, pre-select that student
@@ -70,7 +70,7 @@ export default function StudentView() {
             }
         }
         loadStudents();
-    }, [studentFromParams]);
+    }, [studentFromParams, currentProfile]);
 
     // Filter students based on search (by ID only)
     const filteredStudents = useMemo(() => {
