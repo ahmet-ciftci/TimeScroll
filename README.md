@@ -147,7 +147,7 @@ The **Course** section displays all courses included in the schedule.
 
 The sidebar provides quick access to all sections of the application.
 
-![Sidebar with Theme Toggle](docs/screenshots/Sidebar%20with%20Theme%20Toggle.png)
+<img src="docs/screenshots/Sidebar%20with%20Theme%20Toggle.png" width="120" alt="Sidebar">
 
 **Navigation Items:**
 - Dashboard — Calendar overview
@@ -156,6 +156,7 @@ The sidebar provides quick access to all sections of the application.
 - Course — Course management
 - Light/Dark Mode — Toggle between light and dark themes
 - Export Schedule — Export the schedule to a JSON or CSV file
+
 ---
 
 ## Tech Stack
