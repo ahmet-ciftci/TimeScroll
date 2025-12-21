@@ -345,7 +345,13 @@ export default function Layout({ children }) {
                     <motion.button
                         whileHover={buttonHover}
                         whileTap={buttonTap}
-                        onClick={() => {/* TODO: Help functionality */ }}
+                        onClick={async () => {
+                            try {
+                                await window.api.openHelp();
+                            } catch (error) {
+                                console.error('Failed to open help:', error);
+                            }
+                        }}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                             text-nord-polar-3 hover:bg-nord-snow-1 hover:text-nord-polar-1

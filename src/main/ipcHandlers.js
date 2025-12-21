@@ -6,7 +6,8 @@
  * All data operations are scoped by profile_name for complete schedule isolation.
  */
 
-import { ipcMain, dialog } from 'electron';
+import { ipcMain, dialog, shell, app } from 'electron';
+import path from 'path';
 import DBManager from './database/DatabaseManager';
 import CSVParser from './services/CSVParser';
 import Scheduler from './services/Scheduler';
@@ -42,21 +43,21 @@ export function registerIpcHandlers() {
     ipcMain.handle('app:import-data', async (event, args) => {
         try {
             const { profileName, classroomsPath, enrollmentsPath } = args;
-            
+
             if (!profileName) {
                 return { success: false, error: 'Profile name is required' };
             }
-            
+
             if (classroomsPath) {
                 const classrooms = CSVParser.parseClassrooms(classroomsPath);
                 DBManager.saveClassrooms(profileName, classrooms);
             }
-            
+
             if (enrollmentsPath) {
                 const enrollmentData = CSVParser.parseEnrollments(enrollmentsPath);
                 DBManager.saveEnrollmentData(profileName, enrollmentData);
             }
-            
+
             return { success: true };
         } catch (error) {
             console.error('[IPC] Import error:', error);
@@ -73,37 +74,37 @@ export function registerIpcHandlers() {
     ipcMain.handle('app:generate-schedule', async (event, args) => {
         try {
             const { scheduleName, settings } = args;
-            
+
             // Create the profile name
-            const profileName = scheduleName && scheduleName.trim() 
-                ? scheduleName.trim() 
+            const profileName = scheduleName && scheduleName.trim()
+                ? scheduleName.trim()
                 : `Schedule_${new Date().toISOString().split('T')[0]}_${Date.now()}`;
-            
+
             // Create the profile with settings
             DBManager.createProfile(profileName, settings);
-            
+
             // Get profile settings for scheduler
             const profileSettings = DBManager.getProfileSettings(profileName);
             const scheduler = new Scheduler(profileSettings);
-            
+
             const { courses, students } = DBManager.getAllDataForScheduler(profileName);
             const classrooms = DBManager.getAllClassrooms(profileName);
-            
+
             if (courses.length === 0) {
                 return { success: false, error: 'No courses found. Please import enrollment data first.' };
             }
-            
+
             if (classrooms.length === 0) {
                 return { success: false, error: 'No classrooms found. Please import classroom data first.' };
             }
-            
+
             const result = scheduler.generateSchedule(courses, students, classrooms);
-            
+
             // Save the schedule
             DBManager.saveSchedule(profileName, result.slots);
-            
-            return { 
-                success: true, 
+
+            return {
+                success: true,
                 profileName,
                 usedDays: result.usedDays,
                 totalExams: result.slots.length
@@ -188,7 +189,7 @@ export function registerIpcHandlers() {
         try {
             const students = DBManager.getAllStudents(profileName);
             if (!query) return students.map(s => ({ student_id: s.student_id }));
-            
+
             const lowerQuery = query.toLowerCase();
             return students
                 .filter(s => s.student_id.toLowerCase().includes(lowerQuery))
@@ -219,13 +220,13 @@ export function registerIpcHandlers() {
     ipcMain.handle('db:get-courses', async (event, profileName) => {
         try {
             const { courses, students } = DBManager.getAllDataForScheduler(profileName);
-            
+
             return courses.map(course => {
                 // Find all students enrolled in this course
                 const enrolledStudents = students
                     .filter(s => s.enrolledCourses.includes(course.courseCode))
                     .map(s => s.studentId);
-                
+
                 return {
                     course_code: course.courseCode,
                     student_count: course.studentCount,
@@ -245,13 +246,13 @@ export function registerIpcHandlers() {
         try {
             const { courses, students } = DBManager.getAllDataForScheduler(profileName);
             const course = courses.find(c => c.courseCode === courseCode);
-            
+
             if (!course) return null;
-            
+
             const enrolledStudents = students
                 .filter(s => s.enrolledCourses.includes(courseCode))
                 .map(s => s.studentId);
-            
+
             return {
                 course_code: course.courseCode,
                 student_count: course.studentCount,
@@ -281,9 +282,9 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return [];
-            
+
             const exams = DBManager.getSchedule(targetProfile);
-            
+
             return exams.map(exam => ({
                 exam_id: exam.id,
                 course_code: exam.course_code,
@@ -307,12 +308,12 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return null;
-            
+
             const exams = DBManager.getSchedule(targetProfile);
             const exam = exams.find(e => e.id === examId);
-            
+
             if (!exam) return null;
-            
+
             return {
                 exam_id: exam.id,
                 course_code: exam.course_code,
@@ -336,9 +337,9 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return [];
-            
+
             const exams = DBManager.getSchedule(targetProfile);
-            
+
             return exams
                 .filter(exam => exam.room_name === classroomId)
                 .map(exam => ({
@@ -363,12 +364,12 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return [];
-            
+
             const studentCourses = DBManager.getStudentCourses(targetProfile, studentId);
             if (studentCourses.length === 0) return [];
-            
+
             const exams = DBManager.getSchedule(targetProfile);
-            
+
             return exams
                 .filter(exam => studentCourses.includes(exam.course_code))
                 .map(exam => ({
@@ -393,9 +394,9 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return [];
-            
+
             const exams = DBManager.getSchedule(targetProfile);
-            
+
             return exams
                 .filter(exam => exam.course_code === courseCode)
                 .map(exam => ({
@@ -420,23 +421,23 @@ export function registerIpcHandlers() {
         try {
             const targetProfile = profileName || DBManager.getLatestProfileName();
             if (!targetProfile) return null;
-            
+
             const exams = DBManager.getSchedule(targetProfile);
             const exam = exams.find(e => e.id === examId);
-            
+
             if (!exam) return null;
-            
+
             // Get classroom details
             const classrooms = DBManager.getAllClassrooms(targetProfile);
             const classroom = classrooms.find(c => c.roomName === exam.room_name);
-            
+
             // Get course details
             const { courses, students } = DBManager.getAllDataForScheduler(targetProfile);
             const course = courses.find(c => c.courseCode === exam.course_code);
             const enrolledStudents = students
                 .filter(s => s.enrolledCourses.includes(exam.course_code))
                 .map(s => s.studentId);
-            
+
             return {
                 exam_id: exam.id,
                 course_code: exam.course_code,
@@ -445,9 +446,9 @@ export function registerIpcHandlers() {
                 time: exam.start_time,
                 end_time: exam.end_time,
                 duration_minutes: calculateDurationMinutes(exam.start_time, exam.end_time),
-                classroom: classroom ? { 
-                    classroom_id: classroom.roomName, 
-                    capacity: classroom.capacity 
+                classroom: classroom ? {
+                    classroom_id: classroom.roomName,
+                    capacity: classroom.capacity
                 } : null,
                 course: course ? {
                     course_code: course.courseCode,
@@ -550,7 +551,7 @@ export function registerIpcHandlers() {
         try {
             const profiles = DBManager.getAllProfiles();
             console.log('[IPC] Found profiles:', profiles);
-            
+
             // Transform profiles into recent projects format
             const projects = profiles.map(profile => ({
                 id: profile.profile_name,
@@ -561,12 +562,47 @@ export function registerIpcHandlers() {
                 dayStartTime: profile.day_start_time,
                 dayEndTime: profile.day_end_time
             }));
-            
+
             console.log('[IPC] Returning projects:', projects);
             return projects;
         } catch (error) {
             console.error('[IPC] Error getting recent projects:', error);
             return [];
+        }
+    });
+
+    // ==================== HELP ====================
+
+    /**
+     * Open the Help PDF document
+     */
+    ipcMain.handle('app:open-help', async () => {
+        try {
+            // In development, the file is in docs/Help.pdf relative to project root
+            // In production, it should be in resources/Help.pdf
+            let helpPath;
+
+            if (app.isPackaged) {
+                // Production: look in resources folder
+                helpPath = path.join(process.resourcesPath, 'Help.pdf');
+            } else {
+                // Development: look in docs folder
+                helpPath = path.join(app.getAppPath(), 'docs', 'Help.pdf');
+            }
+
+            console.log('[IPC] Opening help file:', helpPath);
+            const result = await shell.openPath(helpPath);
+
+            if (result) {
+                // shell.openPath returns an error string if it fails, empty string on success
+                console.error('[IPC] Error opening help:', result);
+                return { success: false, error: result };
+            }
+
+            return { success: true };
+        } catch (error) {
+            console.error('[IPC] Error opening help:', error);
+            return { success: false, error: error.message };
         }
     });
 
