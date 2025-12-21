@@ -252,15 +252,16 @@ export default function CalendarGrid({
                                                     <button
                                                         onClick={() => handleExamClick(exam)}
                                                         style={{ height: `${examHeight}px` }}
-                                                        className="absolute left-1 right-1 text-left p-2 rounded-lg bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
-                                                                   hover:bg-nord-frost-3/25 dark:hover:bg-nord-frost-3/35
-                                                                   border border-nord-frost-3/30 dark:border-nord-frost-2/30
-                                                                   transition-colors cursor-pointer group overflow-hidden z-10"
+                                                        className="absolute left-1 right-1 text-left p-2 rounded-lg 
+                                                                   bg-nord-frost-3 dark:bg-nord-frost-4
+                                                                   hover:bg-nord-frost-4 dark:hover:bg-nord-frost-3
+                                                                   border border-nord-frost-4/30 dark:border-nord-frost-3
+                                                                   transition-colors cursor-pointer group overflow-hidden z-10 shadow-sm"
                                                     >
-                                                        <div className="font-medium text-sm text-nord-frost-4 dark:text-nord-frost-2 group-hover:text-nord-frost-3 dark:group-hover:text-nord-frost-1 truncate leading-tight">
+                                                        <div className="font-medium text-sm text-white dark:text-nord-snow-2 truncate leading-tight">
                                                             {exam.course_code}
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-nord-polar-4/70 dark:text-nord-snow-1/50">
+                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-white/80 dark:text-nord-snow-1/80">
                                                             <span className="flex items-center gap-0.5">
                                                                 <RoomIcon className="w-3 h-3 flex-shrink-0" />
                                                                 {exam.classroom_id}

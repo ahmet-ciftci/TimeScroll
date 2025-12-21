@@ -44,12 +44,17 @@ export async function getClassroomById(classroomId) {
 }
 
 /**
- * Get all students
- * @returns {Promise<Array>} List of all students
+ * Get all students (derived from enrollment data)
+ * @returns {Promise<Array>} List of all unique students
  */
 export async function getStudents() {
     await delay(MOCK_DELAY);
-    return mockData.students;
+    // Derive unique students from course enrollments
+    const studentIds = new Set();
+    mockData.courses.forEach(course => {
+        course.enrolled_students.forEach(id => studentIds.add(id));
+    });
+    return Array.from(studentIds).sort().map(id => ({ student_id: id }));
 }
 
 /**
@@ -63,16 +68,16 @@ export async function getStudentById(studentId) {
 }
 
 /**
- * Search students by name or ID (for autocomplete)
+ * Search students by ID (for autocomplete)
  * @param {string} query Search query
  * @returns {Promise<Array>} Matching students
  */
 export async function searchStudents(query) {
     await delay(MOCK_DELAY);
+    const students = await getStudents();
     const lowerQuery = query.toLowerCase();
-    return mockData.students.filter(s =>
-        s.student_id.toLowerCase().includes(lowerQuery) ||
-        s.name.toLowerCase().includes(lowerQuery)
+    return students.filter(s =>
+        s.student_id.toLowerCase().includes(lowerQuery)
     );
 }
 
@@ -172,7 +177,7 @@ export async function getExamDetails(examId) {
 
     return {
         ...exam,
-        course_name: course?.course_name || 'Unknown Course',
+        course_code: exam.course_code,
         classroom_capacity: classroom?.capacity,
         enrolled_students: enrolledStudents
     };

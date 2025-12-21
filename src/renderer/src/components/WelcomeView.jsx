@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigation } from '../contexts/NavigationContext';
 
 /**
@@ -7,14 +7,13 @@ import { useNavigation } from '../contexts/NavigationContext';
  * Landing page shown when no project is loaded.
  * Features:
  * - App branding
- * - Recent projects list
- * - CSV upload area
- * - Quick start actions
+ * - Recent projects as cards
+ * - New Schedule dialog
  */
 
 export default function WelcomeView() {
     const { navigateToRoot } = useNavigation();
-    const [isDragOver, setIsDragOver] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     // Mock recent projects (will come from electron-store later)
     const recentProjects = [
@@ -22,31 +21,6 @@ export default function WelcomeView() {
         { id: 2, name: 'Midterm Exams', lastOpened: '2024-12-10' },
         { id: 3, name: 'Spring 2024', lastOpened: '2024-06-15' },
     ];
-
-    // Handle file drop
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        // TODO: Handle CSV file upload
-        const files = Array.from(e.dataTransfer.files);
-        console.log('Dropped files:', files);
-    };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        setIsDragOver(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragOver(false);
-    };
-
-    // Handle file input
-    const handleFileSelect = (e) => {
-        const files = Array.from(e.target.files);
-        console.log('Selected files:', files);
-        // TODO: Handle CSV file upload
-    };
 
     return (
         <div className="min-h-full flex flex-col">
@@ -63,94 +37,274 @@ export default function WelcomeView() {
                 </p>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="flex-1 grid md:grid-cols-2 gap-6 pb-8">
-                {/* Left Column - Upload Area */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-medium text-nord-polar-2 dark:text-nord-snow-2 flex items-center gap-2">
-                        <UploadIcon className="w-5 h-5 text-nord-frost-4 dark:text-nord-frost-2" />
+            {/* New Schedule Button */}
+            <div className="flex justify-center mb-8">
+                <button
+                    onClick={() => setIsDialogOpen(true)}
+                    className="flex items-center gap-3 px-6 py-3 bg-nord-frost-3 hover:bg-nord-frost-4 
+                               dark:bg-nord-frost-2 dark:hover:bg-nord-frost-1
+                               text-white dark:text-nord-polar-1 font-medium rounded-xl
+                               shadow-lg hover:shadow-xl transition-all"
+                >
+                    <PlusIcon className="w-5 h-5" />
+                    Create New Schedule
+                </button>
+            </div>
+
+            {/* Recent Projects Section */}
+            <div className="flex-1 pb-8">
+                <h2 className="text-lg font-medium text-nord-polar-2 dark:text-nord-snow-2 flex items-center gap-2 mb-4">
+                    <ClockIcon className="w-5 h-5 text-nord-frost-4 dark:text-nord-frost-2" />
+                    Recent Projects
+                </h2>
+
+                {recentProjects.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {recentProjects.map(project => (
+                            <button
+                                key={project.id}
+                                onClick={() => navigateToRoot('dashboard')}
+                                className="card hover:bg-nord-snow-0 dark:hover:bg-nord-polar-3 
+                                           transition-all hover:shadow-lg text-left group"
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-nord-frost-3/15 dark:bg-nord-frost-3/25 
+                                                    flex items-center justify-center flex-shrink-0">
+                                        <FolderIcon className="w-6 h-6 text-nord-frost-4 dark:text-nord-frost-2" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2 
+                                                      group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
+                                                      truncate">
+                                            {project.name}
+                                        </p>
+                                        <p className="text-sm text-nord-polar-4 dark:text-nord-snow-1/60 mt-1">
+                                            {formatDate(project.lastOpened)}
+                                        </p>
+                                    </div>
+                                    <ChevronRightIcon className="w-5 h-5 text-nord-polar-4/50 dark:text-nord-snow-1/30 
+                                                                  group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2
+                                                                  flex-shrink-0 mt-1" />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="card text-center py-12 text-nord-polar-4 dark:text-nord-snow-1/60">
+                        <FolderIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>No recent projects</p>
+                        <p className="text-sm mt-1">Create a new schedule to get started</p>
+                    </div>
+                )}
+            </div>
+
+            {/* New Schedule Dialog */}
+            {isDialogOpen && (
+                <NewScheduleDialog onClose={() => setIsDialogOpen(false)} />
+            )}
+        </div>
+    );
+}
+
+// New Schedule Dialog Component
+function NewScheduleDialog({ onClose }) {
+    const [scheduleName, setScheduleName] = useState('');
+    const [classroomFile, setClassroomFile] = useState(null);
+    const [enrollmentFile, setEnrollmentFile] = useState(null);
+    const [examDuration, setExamDuration] = useState(90);
+    const [maxExamPeriod, setMaxExamPeriod] = useState(14);
+
+    const classroomInputRef = useRef(null);
+    const enrollmentInputRef = useRef(null);
+
+    const handleCreate = () => {
+        // TODO: Implement schedule creation
+        console.log('Creating schedule:', {
+            scheduleName,
+            classroomFile,
+            enrollmentFile,
+            examDuration,
+            maxExamPeriod
+        });
+        onClose();
+    };
+
+    const isFormValid = scheduleName.trim() && classroomFile && enrollmentFile;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-nord-polar-1/50 dark:bg-black/60 backdrop-blur-sm"
+                onClick={onClose}
+            />
+
+            {/* Dialog */}
+            <div className="relative bg-white dark:bg-nord-polar-2 rounded-2xl shadow-2xl 
+                            w-full max-w-lg p-6 space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-heading font-semibold text-nord-polar-1 dark:text-nord-snow-2">
                         New Schedule
                     </h2>
-
-                    {/* Drop Zone */}
-                    <div
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        className={`
-                            relative border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
-                            ${isDragOver
-                                ? 'border-nord-frost-3 bg-nord-frost-3/10 dark:bg-nord-frost-3/20'
-                                : 'border-nord-snow-1 dark:border-nord-polar-3 hover:border-nord-frost-3/50 dark:hover:border-nord-frost-2/50'
-                            }
-                        `}
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-lg hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 
+                                   text-nord-polar-4 dark:text-nord-snow-1/70 transition-colors"
                     >
+                        <XIcon className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-5">
+                    {/* Schedule Name */}
+                    <div>
+                        <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
+                            Schedule Name
+                        </label>
                         <input
+                            type="text"
+                            value={scheduleName}
+                            onChange={(e) => setScheduleName(e.target.value)}
+                            placeholder="e.g., Fall 2024 Finals"
+                            className="input"
+                        />
+                    </div>
+
+                    {/* Classroom Data CSV */}
+                    <div>
+                        <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
+                            Classroom Data (CSV)
+                        </label>
+                        <p className="text-xs text-nord-polar-4 dark:text-nord-snow-1/50 mb-2">
+                            Columns: Room Name, Capacity
+                        </p>
+                        <input
+                            ref={classroomInputRef}
                             type="file"
                             accept=".csv"
-                            multiple
-                            onChange={handleFileSelect}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => setClassroomFile(e.target.files[0] || null)}
+                            className="hidden"
                         />
-                        <div className="space-y-3">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-nord-snow-1 dark:bg-nord-polar-3">
-                                <FileIcon className="w-6 h-6 text-nord-polar-4 dark:text-nord-snow-1/70" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2">
-                                    Drop CSV files here
-                                </p>
-                                <p className="text-sm text-nord-polar-4 dark:text-nord-snow-1/60 mt-1">
-                                    or click to browse
-                                </p>
-                            </div>
-                            <p className="text-xs text-nord-polar-4/70 dark:text-nord-snow-1/40">
-                                Supports: exams.csv, courses.csv, students.csv, classrooms.csv
-                            </p>
+                        <button
+                            onClick={() => classroomInputRef.current?.click()}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed
+                                transition-colors text-left
+                                ${classroomFile
+                                    ? 'border-nord-aurora-green bg-nord-aurora-green/10 dark:bg-nord-aurora-green/20'
+                                    : 'border-nord-snow-1 dark:border-nord-polar-3 hover:border-nord-frost-3/50'}`}
+                        >
+                            {classroomFile ? (
+                                <>
+                                    <CheckIcon className="w-5 h-5 text-nord-aurora-green" />
+                                    <span className="text-nord-polar-2 dark:text-nord-snow-2 truncate">
+                                        {classroomFile.name}
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <UploadIcon className="w-5 h-5 text-nord-polar-4 dark:text-nord-snow-1/50" />
+                                    <span className="text-nord-polar-4 dark:text-nord-snow-1/60">
+                                        Select classroom CSV...
+                                    </span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Enrollment Data CSV */}
+                    <div>
+                        <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
+                            Enrollment Data (CSV)
+                        </label>
+                        <p className="text-xs text-nord-polar-4 dark:text-nord-snow-1/50 mb-2">
+                            Columns: Course Code, Student ID
+                        </p>
+                        <input
+                            ref={enrollmentInputRef}
+                            type="file"
+                            accept=".csv"
+                            onChange={(e) => setEnrollmentFile(e.target.files[0] || null)}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={() => enrollmentInputRef.current?.click()}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed
+                                transition-colors text-left
+                                ${enrollmentFile
+                                    ? 'border-nord-aurora-green bg-nord-aurora-green/10 dark:bg-nord-aurora-green/20'
+                                    : 'border-nord-snow-1 dark:border-nord-polar-3 hover:border-nord-frost-3/50'}`}
+                        >
+                            {enrollmentFile ? (
+                                <>
+                                    <CheckIcon className="w-5 h-5 text-nord-aurora-green" />
+                                    <span className="text-nord-polar-2 dark:text-nord-snow-2 truncate">
+                                        {enrollmentFile.name}
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <UploadIcon className="w-5 h-5 text-nord-polar-4 dark:text-nord-snow-1/50" />
+                                    <span className="text-nord-polar-4 dark:text-nord-snow-1/60">
+                                        Select enrollment CSV...
+                                    </span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Exam Duration & Max Period Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
+                                Exam Duration (min)
+                            </label>
+                            <input
+                                type="number"
+                                value={examDuration}
+                                onChange={(e) => setExamDuration(parseInt(e.target.value) || 0)}
+                                min={15}
+                                max={300}
+                                className="input"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
+                                Max Exam Period (days)
+                            </label>
+                            <input
+                                type="number"
+                                value={maxExamPeriod}
+                                onChange={(e) => setMaxExamPeriod(parseInt(e.target.value) || 0)}
+                                min={1}
+                                max={60}
+                                className="input"
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column - Recent Projects */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-medium text-nord-polar-2 dark:text-nord-snow-2 flex items-center gap-2">
-                        <ClockIcon className="w-5 h-5 text-nord-frost-4 dark:text-nord-frost-2" />
-                        Recent Projects
-                    </h2>
-
-                    {recentProjects.length > 0 ? (
-                        <div className="space-y-2">
-                            {recentProjects.map(project => (
-                                <button
-                                    key={project.id}
-                                    onClick={() => navigateToRoot('dashboard')}
-                                    className="w-full card hover:bg-nord-snow-0 dark:hover:bg-nord-polar-2 transition-colors text-left group"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-nord-frost-3/15 dark:bg-nord-frost-3/25 flex items-center justify-center">
-                                                <FolderIcon className="w-5 h-5 text-nord-frost-4 dark:text-nord-frost-2" />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-nord-polar-2 dark:text-nord-snow-2 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2">
-                                                    {project.name}
-                                                </p>
-                                                <p className="text-xs text-nord-polar-4 dark:text-nord-snow-1/60">
-                                                    Last opened {formatDate(project.lastOpened)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <ChevronRightIcon className="w-4 h-4 text-nord-polar-4/50 dark:text-nord-snow-1/30 group-hover:text-nord-frost-4 dark:group-hover:text-nord-frost-2" />
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="card text-center py-8 text-nord-polar-4 dark:text-nord-snow-1/60">
-                            <FolderIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            <p>No recent projects</p>
-                        </div>
-                    )}
+                {/* Footer Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg text-nord-polar-3 dark:text-nord-snow-1
+                                   hover:bg-nord-snow-1 dark:hover:bg-nord-polar-3 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleCreate}
+                        disabled={!isFormValid}
+                        className={`px-5 py-2 rounded-lg font-medium transition-colors
+                            ${isFormValid
+                                ? 'bg-nord-frost-3 hover:bg-nord-frost-4 dark:bg-nord-frost-2 dark:hover:bg-nord-frost-1 text-white dark:text-nord-polar-1'
+                                : 'bg-nord-snow-1 dark:bg-nord-polar-3 text-nord-polar-4/50 dark:text-nord-snow-1/30 cursor-not-allowed'
+                            }`}
+                    >
+                        Create Schedule
+                    </button>
                 </div>
             </div>
         </div>
@@ -163,11 +317,11 @@ function formatDate(dateString) {
     const now = new Date();
     const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays === 0) return 'Opened today';
+    if (diffDays === 1) return 'Opened yesterday';
+    if (diffDays < 7) return `Opened ${diffDays} days ago`;
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Opened ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 }
 
 // Icons
@@ -182,24 +336,11 @@ function CalendarIcon({ className }) {
     );
 }
 
-function UploadIcon({ className }) {
+function PlusIcon({ className }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-    );
-}
-
-function FileIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
     );
 }
@@ -221,18 +362,37 @@ function FolderIcon({ className }) {
     );
 }
 
-function PlayIcon({ className }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polygon points="5 3 19 12 5 21 5 3" />
-        </svg>
-    );
-}
-
 function ChevronRightIcon({ className }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 18l6-6-6-6" />
+        </svg>
+    );
+}
+
+function XIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+    );
+}
+
+function UploadIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+    );
+}
+
+function CheckIcon({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="20 6 9 17 4 12" />
         </svg>
     );
 }

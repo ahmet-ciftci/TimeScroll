@@ -33,68 +33,6 @@
             "capacity": 80
         }
     ],
-    "students": [
-        {
-            "student_id": "STU001"
-        },
-        {
-            "student_id": "STU002"
-        },
-        {
-            "student_id": "STU003"
-        },
-        {
-            "student_id": "STU004"
-        },
-        {
-            "student_id": "STU005"
-        },
-        {
-            "student_id": "STU006"
-        },
-        {
-            "student_id": "STU007"
-        },
-        {
-            "student_id": "STU008"
-        },
-        {
-            "student_id": "STU009"
-        },
-        {
-            "student_id": "STU010"
-        },
-        {
-            "student_id": "STU011"
-        },
-        {
-            "student_id": "STU012"
-        },
-        {
-            "student_id": "STU013"
-        },
-        {
-            "student_id": "STU014"
-        },
-        {
-            "student_id": "STU015"
-        },
-        {
-            "student_id": "STU016"
-        },
-        {
-            "student_id": "STU017"
-        },
-        {
-            "student_id": "STU018"
-        },
-        {
-            "student_id": "STU019"
-        },
-        {
-            "student_id": "STU020"
-        }
-    ],
     "courses": [
         {
             "course_code": "MATH101",
