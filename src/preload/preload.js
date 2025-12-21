@@ -1,19 +1,13 @@
-import { contextBridge } from 'electron';
-import { electronAPI } from '@electron-toolkit/preload';
+const { contextBridge, ipcRenderer } = require('electron');
 
-// Custom APIs for renderer
-const api = {};
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled
-if (process.contextIsolated) {
-    try {
-        contextBridge.exposeInMainWorld('electron', electronAPI);
-        contextBridge.exposeInMainWorld('api', api);
-    } catch (error) {
-        console.error(error);
-    }
-} else {
-    window.electron = electronAPI;
-    window.api = api;
-}
+contextBridge.exposeInMainWorld('api', {
+    selectFile: () => ipcRenderer.invoke('dialog:openFile'),
+    importData: (args) => ipcRenderer.invoke('app:import-data', args),
+    generateSchedule: () => ipcRenderer.invoke('app:generate-schedule'),
+    getScheduleHistory: () => ipcRenderer.invoke('db:get-schedule-history'),
+    getScheduleDetails: (profileName) => ipcRenderer.invoke('db:get-schedule-details', profileName),
+    getStudentCourses: (studentId) => ipcRenderer.invoke('db:get-student-courses', studentId),
+    getAllStudents: () => ipcRenderer.invoke('db:get-all-students'),
+    getSettings: () => ipcRenderer.invoke('db:get-settings'),
+    updateSettings: (newSettings) => ipcRenderer.invoke('db:update-settings', newSettings)
+});
