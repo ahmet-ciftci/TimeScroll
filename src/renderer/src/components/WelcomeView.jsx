@@ -181,11 +181,11 @@ function NewScheduleDialog({ onClose }) {
     const [scheduleName, setScheduleName] = useState('');
     const [classroomFile, setClassroomFile] = useState(null);
     const [enrollmentFile, setEnrollmentFile] = useState(null);
-    const [examDuration, setExamDuration] = useState(90);
-    const [minScheduleDays, setMinScheduleDays] = useState(1);
-    const [maxScheduleDays, setMaxScheduleDays] = useState(14);
-    const [startTime, setStartTime] = useState('09:00');
-    const [endTime, setEndTime] = useState('17:00');
+    const [examDuration, setExamDuration] = useState('');
+    const [minScheduleDays, setMinScheduleDays] = useState('');
+    const [maxScheduleDays, setMaxScheduleDays] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
 
     const classroomInputRef = useRef(null);
     const enrollmentInputRef = useRef(null);
@@ -196,9 +196,9 @@ function NewScheduleDialog({ onClose }) {
             scheduleName,
             classroomFile,
             enrollmentFile,
-            examDuration,
-            minScheduleDays,
-            maxScheduleDays,
+            examDuration: parseInt(examDuration),
+            minScheduleDays: parseInt(minScheduleDays),
+            maxScheduleDays: parseInt(maxScheduleDays),
             startTime,
             endTime
         });
@@ -244,9 +244,12 @@ function NewScheduleDialog({ onClose }) {
         scheduleName.trim() &&
         classroomFile &&
         enrollmentFile &&
+        examDuration &&
+        minScheduleDays &&
+        maxScheduleDays &&
         isValidTime(startTime) &&
         isValidTime(endTime) &&
-        // Optional: Ensure start time is before end time
+        // Ensure start time is before end time
         (parseInt(startTime.replace(':', '')) < parseInt(endTime.replace(':', '')));
 
     return (
@@ -308,7 +311,6 @@ function NewScheduleDialog({ onClose }) {
                             type="text"
                             value={scheduleName}
                             onChange={(e) => setScheduleName(e.target.value)}
-                            placeholder="e.g., Fall 2024 Finals"
                             className="input"
                         />
                     </div>
@@ -403,7 +405,7 @@ function NewScheduleDialog({ onClose }) {
                         <input
                             type="number"
                             value={examDuration}
-                            onChange={(e) => setExamDuration(parseInt(e.target.value) || 0)}
+                            onChange={(e) => setExamDuration(e.target.value === '' ? '' : (parseInt(e.target.value) || 0))}
                             min={15}
                             max={300}
                             className="input"
@@ -414,26 +416,26 @@ function NewScheduleDialog({ onClose }) {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
-                                Min Schedule Days
+                                Shortest Schedule (Days)
                             </label>
                             <input
                                 type="number"
                                 value={minScheduleDays}
-                                onChange={(e) => setMinScheduleDays(parseInt(e.target.value) || 0)}
+                                onChange={(e) => setMinScheduleDays(e.target.value === '' ? '' : (parseInt(e.target.value) || 0))}
                                 min={1}
-                                max={maxScheduleDays}
+                                max={maxScheduleDays || 60}
                                 className="input"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
-                                Max Schedule Days
+                                Longest Schedule (Days)
                             </label>
                             <input
                                 type="number"
                                 value={maxScheduleDays}
-                                onChange={(e) => setMaxScheduleDays(parseInt(e.target.value) || 0)}
-                                min={minScheduleDays}
+                                onChange={(e) => setMaxScheduleDays(e.target.value === '' ? '' : (parseInt(e.target.value) || 0))}
+                                min={minScheduleDays || 1}
                                 max={60}
                                 className="input"
                             />
@@ -444,25 +446,23 @@ function NewScheduleDialog({ onClose }) {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
-                                Start Time
+                                Start Time <span className="text-xs text-nord-polar-4 font-normal ml-1">(HH:MM)</span>
                             </label>
                             <input
                                 type="text"
                                 value={startTime}
                                 onChange={(e) => handleTimeChange(e, setStartTime)}
-                                placeholder="09:00"
                                 className={`input ${!isValidTime(startTime) && startTime ? 'border-red-500 focus:border-red-500' : ''}`}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-nord-polar-2 dark:text-nord-snow-2 mb-2">
-                                End Time
+                                End Time <span className="text-xs text-nord-polar-4 font-normal ml-1">(HH:MM)</span>
                             </label>
                             <input
                                 type="text"
                                 value={endTime}
                                 onChange={(e) => handleTimeChange(e, setEndTime)}
-                                placeholder="17:00"
                                 className={`input ${!isValidTime(endTime) && endTime ? 'border-red-500 focus:border-red-500' : ''}`}
                             />
                         </div>
