@@ -358,20 +358,48 @@ export const heroItemVariants = {
 
 // ============ Calendar Animations ============
 
+// Slide variants for directional transitions - Optimized for performance
 export const calendarSlideVariants = {
     initial: (direction) => ({
+        x: direction > 0 ? '110%' : '-110%', // Push slightly further to avoid edge bleeding
+        position: 'absolute',
+        willChange: 'transform',
+        boxShadow: '-5px 0 25px rgba(0,0,0,0.05)', // Subtle shadow for depth
+    }),
+    enter: {
+        x: '0%',
+        position: 'relative',
+        transition: {
+            type: 'spring',
+            stiffness: 300,
+            damping: 30, // Higher damping for less oscillation (smoother slide)
+            mass: 0.8,
+        },
+    },
+    exit: (direction) => ({
+        x: direction > 0 ? '-110%' : '110%',
+        position: 'absolute',
+        transition: {
+            duration: 0.25,
+            ease: 'easeInOut'
+        },
+    }),
+};
+
+export const slideHeaderVariants = {
+    initial: (direction) => ({
         opacity: 0,
-        x: direction > 0 ? 100 : -100,
+        x: direction > 0 ? 20 : -20,
     }),
     enter: {
         opacity: 1,
         x: 0,
-        transition: elegantEase,
+        transition: { duration: 0.3 },
     },
     exit: (direction) => ({
         opacity: 0,
-        x: direction > 0 ? -100 : 100,
-        transition: { duration: 0.3 },
+        x: direction > 0 ? -20 : 20,
+        transition: { duration: 0.2 },
     }),
 };
 

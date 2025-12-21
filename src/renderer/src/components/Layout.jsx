@@ -61,6 +61,14 @@ export default function Layout({ children }) {
     } = useNavigation();
     const { isDarkMode, toggleTheme } = useTheme();
 
+    // Theme transition overlay state
+    const [transitionOverlay, setTransitionOverlay] = useState({
+        active: false,
+        x: 0,
+        y: 0,
+        theme: 'light'
+    });
+
     // Mock project name (will come from project context later)
     const projectName = activeNavItem !== 'welcome' ? 'Fall 2024 Finals' : null;
 

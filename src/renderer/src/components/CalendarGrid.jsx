@@ -11,6 +11,9 @@ import {
     staggerItem,
     examCardVariants,
     smoothSpring,
+    calendarSlideVariants,
+    elegantEase,
+    slideHeaderVariants,
 } from '../lib/animations';
 
 /**
@@ -95,6 +98,7 @@ export default function CalendarGrid({
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentMonday, setCurrentMonday] = useState(() => getMonday(new Date()));
+    const [direction, setDirection] = useState(0); // -1 for prev, 1 for next
     const { navigateTo } = useNavigation();
 
     // Get week days for current view
@@ -102,6 +106,7 @@ export default function CalendarGrid({
 
     // Navigation handlers
     const goToPrevWeek = useCallback(() => {
+        setDirection(-1);
         setCurrentMonday(prev => {
             const newMonday = new Date(prev);
             newMonday.setDate(prev.getDate() - 7);
@@ -110,6 +115,7 @@ export default function CalendarGrid({
     }, []);
 
     const goToNextWeek = useCallback(() => {
+        setDirection(1);
         setCurrentMonday(prev => {
             const newMonday = new Date(prev);
             newMonday.setDate(prev.getDate() + 7);
@@ -118,8 +124,12 @@ export default function CalendarGrid({
     }, []);
 
     const goToToday = useCallback(() => {
-        setCurrentMonday(getMonday(new Date()));
-    }, []);
+        const today = getMonday(new Date());
+        if (today > currentMonday) setDirection(1);
+        else if (today < currentMonday) setDirection(-1);
+        else setDirection(0);
+        setCurrentMonday(today);
+    }, [currentMonday]);
 
     // Load data
     useEffect(() => {
@@ -200,13 +210,14 @@ export default function CalendarGrid({
                     >
                         <ChevronRight className="w-5 h-5" />
                     </motion.button>
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="wait" custom={direction}>
                         <motion.h3
                             key={currentMonday.toISOString()}
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            transition={{ duration: 0.2 }}
+                            custom={direction}
+                            variants={slideHeaderVariants}
+                            initial="initial"
+                            animate="enter"
+                            exit="exit"
                             className="text-lg font-medium text-nord-polar-1 dark:text-nord-snow-2 ml-2"
                         >
                             {formatWeekRange(currentMonday)}
@@ -215,111 +226,125 @@ export default function CalendarGrid({
                 </div>
                 <motion.button
                     onClick={goToToday}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-3 py-1.5 text-sm font-medium rounded-lg
-                               bg-nord-frost-3/10 text-nord-frost-4 
-                               hover:bg-nord-frost-3/20 dark:bg-nord-frost-3/20 
-                               dark:text-nord-frost-2 dark:hover:bg-nord-frost-3/30"
+                    disabled={currentMonday.toDateString() === getMonday(new Date()).toDateString()}
+                    whileHover={currentMonday.toDateString() !== getMonday(new Date()).toDateString() ? { scale: 1.05 } : {}}
+                    whileTap={currentMonday.toDateString() !== getMonday(new Date()).toDateString() ? { scale: 0.95 } : {}}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors
+                               ${currentMonday.toDateString() === getMonday(new Date()).toDateString()
+                            ? 'bg-nord-snow-1 text-nord-polar-3/40 dark:bg-nord-polar-3 dark:text-nord-snow-1/30 cursor-not-allowed'
+                            : 'bg-nord-frost-3/10 text-nord-frost-4 hover:bg-nord-frost-3/20 dark:bg-nord-frost-3/20 dark:text-nord-frost-2 dark:hover:bg-nord-frost-3/30'
+                        }`}
                 >
                     Today
                 </motion.button>
             </div>
 
             {/* Calendar Grid */}
-            <div className="overflow-x-auto">
-                <table className="w-full table-fixed border-collapse min-w-[900px]">
-                    {/* Header row with dates */}
-                    <thead>
-                        <tr>
-                            <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-[60px]">
-                                Time
-                            </th>
-                            {weekDays.map(date => (
-                                <th
-                                    key={date}
-                                    className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3
+            <div className="overflow-hidden relative min-h-[500px] border border-transparent rounded-xl">
+                <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+                    <motion.div
+                        key={currentMonday.toISOString()}
+                        custom={direction}
+                        variants={calendarSlideVariants}
+                        initial="initial"
+                        animate="enter"
+                        exit="exit"
+                        className="w-full overflow-x-auto scrollbar-frost"
+                    >
+                        <table className="w-full table-fixed border-collapse min-w-[900px]">
+                            {/* Header row with dates */}
+                            <thead>
+                                <tr>
+                                    <th className="p-3 text-left text-sm font-medium text-nord-polar-3 dark:text-nord-snow-1/70 border-b border-nord-snow-1 dark:border-nord-polar-3 w-[60px]">
+                                        Time
+                                    </th>
+                                    {weekDays.map(date => (
+                                        <th
+                                            key={date}
+                                            className={`p-3 text-center text-sm font-medium border-b border-nord-snow-1 dark:border-nord-polar-3
                                         ${isToday(date)
-                                            ? 'text-nord-frost-3 dark:text-nord-frost-2 bg-nord-frost-3/5 dark:bg-nord-frost-2/10'
-                                            : 'text-nord-polar-3 dark:text-nord-snow-1/70'
-                                        }`}
-                                >
-                                    {formatDayHeader(date)}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-
-                    {/* Body rows with time slots */}
-                    <tbody>
-                        {TIME_SLOTS.map(time => (
-                            <tr key={time} className="h-20 hover:bg-nord-snow-2/30 dark:hover:bg-nord-polar-3/20">
-                                <td className="p-2 text-sm font-medium text-nord-polar-4 dark:text-nord-snow-1/60 border-b border-nord-snow-1 dark:border-nord-polar-3 whitespace-nowrap align-top pt-3">
-                                    {time}
-                                </td>
-
-                                {weekDays.map(date => {
-                                    const exam = findExamAtSlot(exams, date, time);
-                                    const todayCell = isToday(date);
-
-                                    // Calculate height based on duration (60min = 76px)
-                                    const baseHeight = 76;
-                                    const examHeight = exam
-                                        ? Math.round((exam.duration_minutes / 60) * baseHeight)
-                                        : baseHeight;
-
-                                    return (
-                                        <td
-                                            key={`${time}-${date}`}
-                                            className={`p-1 border-b border-nord-snow-1 dark:border-nord-polar-3 relative
-                                                ${todayCell ? 'bg-nord-frost-3/5 dark:bg-nord-frost-2/5' : ''}`}
+                                                    ? 'text-nord-frost-3 dark:text-nord-frost-2 bg-nord-frost-3/5 dark:bg-nord-frost-2/10'
+                                                    : 'text-nord-polar-3 dark:text-nord-snow-1/70'
+                                                }`}
                                         >
-                                            {/* Container for exam card - relative positioning base */}
-                                            <div className="h-[72px]">
-                                                {exam ? (
-                                                    <motion.button
-                                                        onClick={() => handleExamClick(exam)}
-                                                        style={{ height: `${examHeight}px` }}
-                                                        initial={{ opacity: 0, scale: 0.9 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        whileHover={{
-                                                            scale: 1.02,
-                                                            y: -2,
-                                                            boxShadow: '0 8px 25px -5px rgba(136, 192, 208, 0.4)'
-                                                        }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        transition={smoothSpring}
-                                                        className="absolute left-1 right-1 text-left p-2 rounded-lg 
+                                            {formatDayHeader(date)}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            {/* Body rows with time slots */}
+                            <tbody>
+                                {TIME_SLOTS.map(time => (
+                                    <tr key={time} className="h-20 hover:bg-nord-snow-2/30 dark:hover:bg-nord-polar-3/20">
+                                        <td className="p-2 text-sm font-medium text-nord-polar-4 dark:text-nord-snow-1/60 border-b border-nord-snow-1 dark:border-nord-polar-3 whitespace-nowrap align-top pt-3">
+                                            {time}
+                                        </td>
+
+                                        {weekDays.map(date => {
+                                            const exam = findExamAtSlot(exams, date, time);
+                                            const todayCell = isToday(date);
+
+                                            // Calculate height based on duration (60min = 76px)
+                                            const baseHeight = 76;
+                                            const examHeight = exam
+                                                ? Math.round((exam.duration_minutes / 60) * baseHeight)
+                                                : baseHeight;
+
+                                            return (
+                                                <td
+                                                    key={`${time}-${date}`}
+                                                    className={`p-1 border-b border-nord-snow-1 dark:border-nord-polar-3 relative
+                                                ${todayCell ? 'bg-nord-frost-3/5 dark:bg-nord-frost-2/5' : ''}`}
+                                                >
+                                                    {/* Container for exam card - relative positioning base */}
+                                                    <div className="h-[72px]">
+                                                        {exam ? (
+                                                            <motion.button
+                                                                onClick={() => handleExamClick(exam)}
+                                                                style={{ height: `${examHeight}px` }}
+                                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                whileHover={{
+                                                                    scale: 1.02,
+                                                                    y: -2,
+                                                                    boxShadow: '0 8px 25px -5px rgba(136, 192, 208, 0.4)'
+                                                                }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                transition={smoothSpring}
+                                                                className="absolute left-1 right-1 text-left p-2 rounded-lg 
                                                                    bg-nord-frost-3 dark:bg-nord-frost-4
                                                                    hover:bg-nord-frost-4 dark:hover:bg-nord-frost-3
                                                                    border border-nord-frost-4/30 dark:border-nord-frost-3
                                                                    cursor-pointer group overflow-hidden z-10 shadow-sm"
-                                                    >
-                                                        <div className="font-medium text-sm text-white dark:text-nord-snow-2 truncate leading-tight">
-                                                            {exam.course_code}
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-white/80 dark:text-nord-snow-1/80">
-                                                            <span className="flex items-center gap-0.5">
-                                                                <MapPin className="w-3 h-3 flex-shrink-0" />
-                                                                {exam.classroom_id}
-                                                            </span>
-                                                            <span className="flex items-center gap-0.5">
-                                                                <Clock className="w-3 h-3 flex-shrink-0" />
-                                                                {exam.duration_minutes}m
-                                                            </span>
-                                                        </div>
-                                                    </motion.button>
-                                                ) : (
-                                                    <div className="w-full h-full rounded-lg border border-dashed border-nord-snow-1/50 dark:border-nord-polar-3/30" />
-                                                )}
-                                            </div>
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                                            >
+                                                                <div className="font-medium text-sm text-white dark:text-nord-snow-2 truncate leading-tight">
+                                                                    {exam.course_code}
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5 mt-1 text-xs text-white/80 dark:text-nord-snow-1/80">
+                                                                    <span className="flex items-center gap-0.5">
+                                                                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                                        {exam.classroom_id}
+                                                                    </span>
+                                                                    <span className="flex items-center gap-0.5">
+                                                                        <Clock className="w-3 h-3 flex-shrink-0" />
+                                                                        {exam.duration_minutes}m
+                                                                    </span>
+                                                                </div>
+                                                            </motion.button>
+                                                        ) : (
+                                                            <div className="w-full h-full rounded-lg border border-dashed border-nord-snow-1/50 dark:border-nord-polar-3/30" />
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </motion.div>
     );
